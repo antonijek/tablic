@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Tablić online — igraj besplatno</title>
+  <meta name="description" content="Tablić online protiv računara — besplatno, bez registracije, u pregledaču i na telefonu.">
+  <meta name="theme-color" content="#0f4d2e">
+  <link rel="stylesheet" href="./tablic.css">
+</head>
+<body>
+  <header class="topbar">
+    <h1>Tablić</h1>
+    <div class="score" aria-live="polite">
+      <span>Vi <b id="scoreMe">0</b></span>
+      <span class="sep">:</span>
+      <span><b id="scoreOpp">0</b> Računar</span>
+    </div>
+    <button id="menuBtn" class="icon-btn" aria-label="Meni">☰</button>
+  </header>
+
+  <main class="board">
+    <section class="seat seat-opp">
+      <div id="oppHand" class="hand hand-opp" aria-label="Protivnikove karte"></div>
+      <div class="stats" id="oppStats"></div>
+    </section>
+
+    <section class="table-area">
+      <div class="deck-info"><span id="deckCount"></span><span id="roundInfo"></span></div>
+      <div id="table" class="table-cards" aria-label="Sto"></div>
+      <div id="toast" class="toast" role="status"></div>
+    </section>
+
+    <section class="controls">
+      <p id="hint" class="hint"></p>
+      <div class="buttons">
+        <button id="suggestBtn" class="btn ghost">Predlog</button>
+        <button id="throwBtn" class="btn">Baci na sto</button>
+        <button id="captureBtn" class="btn primary">Nosi</button>
+      </div>
+    </section>
+
+    <section class="seat seat-me">
+      <div class="stats" id="meStats"></div>
+      <div id="myHand" class="hand" aria-label="Vaše karte"></div>
+    </section>
+  </main>
+
+  <dialog id="menu">
+    <h2>Meni</h2>
+    <label>Protivnik
+      <select id="levelSel">
+        <option value="easy">Početnik</option>
+        <option value="medium" selected>Iskusan</option>
+        <option value="hard">Majstor</option>
+      </select>
+    </label>
+    <div class="dialog-buttons">
+      <button id="newGameBtn" class="btn primary">Nova igra</button>
+      <a class="btn ghost" href="./pravila.html">Pravila</a>
+      <button id="closeMenuBtn" class="btn ghost">Zatvori</button>
+    </div>
+  </dialog>
+
+  <dialog id="dealEnd">
+    <h2 id="dealEndTitle">Kraj partije</h2>
+    <table class="result">
+      <thead><tr><th></th><th>Vi</th><th>Računar</th></tr></thead>
+      <tbody id="dealEndBody"></tbody>
+    </table>
+    <p id="dealEndNote" class="note"></p>
+    <div class="dialog-buttons">
+      <button id="nextDealBtn" class="btn primary">Sledeća partija</button>
+    </div>
+  </dialog>
+
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

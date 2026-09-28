@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pravila tablića — kako se igra tablić</title>
+  <meta name="description" content="Pravila tablića: vrednosti karata, nošenje, table i bodovanje. Kratko i jasno, sa primerima.">
+  <link rel="stylesheet" href="./tablic.css">
+  <style>
+    body { display: block; }
+    .rules { max-width: 720px; margin: 0 auto; padding: 16px; line-height: 1.55; }
+    .rules h1 { margin-top: 8px; }
+    .rules table { border-collapse: collapse; margin: 8px 0 16px; }
+    .rules th, .rules td { border: 1px solid rgba(255, 255, 255, .25); padding: 6px 10px; text-align: left; }
+    .rules a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <main class="rules">
+    <p><a href="./">← Nazad na igru</a></p>
+    <h1>Pravila tablića</h1>
+    <p>Tablić je najpopularnija „ribarska“ kartaška igra na Balkanu. Igra se špilom od 52 karte. Cilj je odneti što više karata koje nose poene.</p>
+
+    <h2>Deljenje</h2>
+    <p>Na početku svaki igrač dobija 6 karata, a 4 karte se otvore na sto. Kad igrači odigraju sve karte, deli se po još 6, dok se špil ne potroši.</p>
+
+    <h2>Vrednosti karata</h2>
+    <table>
+      <tr><th>Karta</th><th>Vrednost</th></tr>
+      <tr><td>2–10</td><td>po broju</td></tr>
+      <tr><td>J (žandar)</td><td>12</td></tr>
+      <tr><td>Q (dama)</td><td>13</td></tr>
+      <tr><td>K (kralj)</td><td>14</td></tr>
+      <tr><td>A (kec)</td><td>1 ili 11</td></tr>
+    </table>
+
+    <h2>Nošenje</h2>
+    <p>Kad ste na potezu, odigrate jednu kartu. Njome nosite sa stola kartu iste vrednosti ili više karata čiji je zbir jednak vrednosti vaše karte. Možete odneti i više grupa odjednom.</p>
+    <p><b>Primer:</b> na stolu su 3, 7, 10 i 2. Desetkom nosite 10 i 3+7 odjednom. Dvojka ostaje.</p>
+    <p>Nošenje nije obavezno. Kartu uvek možete i baciti na sto.</p>
+
+    <h2>Tabla</h2>
+    <p>Ako odnesete sve karte sa stola, napravili ste <b>tablu</b> i dobijate 1 poen. Tabla napravljena poslednjom kartom partije se ne računa.</p>
+
+    <h2>Bodovanje</h2>
+    <table>
+      <tr><th>Šta</th><th>Poena</th></tr>
+      <tr><td>svaka 10, J, Q, K, A</td><td>1</td></tr>
+      <tr><td>10♦ (velika desetka)</td><td>2</td></tr>
+      <tr><td>2♣ (mala dvojka)</td><td>1</td></tr>
+      <tr><td>najviše karata (27 ili više)</td><td>3</td></tr>
+      <tr><td>svaka tabla</td><td>1</td></tr>
+    </table>
+    <p>Karte koje ostanu na stolu na kraju partije nosi igrač koji je poslednji nosio. Igra se do 101 poena.</p>
+
+    <p><a class="btn primary" href="./">Igraj tablić</a></p>
+  </main>
+</body>
+</html>
