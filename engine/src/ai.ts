@@ -7,6 +7,7 @@
 import type { Card, Move, PlayerView, Rank } from './types.js';
 import { cardPoints, createDeck, RANKS, makeCard } from './cards.js';
 import { captureOptions } from './capture.js';
+import { searchMove } from './search.js';
 
 export type AiLevel = 'easy' | 'medium' | 'hard';
 
@@ -107,7 +108,15 @@ export function scoreMoves(view: PlayerView, level: AiLevel = 'medium'): Scored[
   });
 }
 
-export function chooseMove(view: PlayerView, level: AiLevel = 'medium', rng: () => number = Math.random): Move {
+export function chooseMove(view: PlayerView, level: AiLevel = 'hard', rng: () => number = Math.random, samples?: number): Move {
+  if (level === 'hard') {
+    const legal: Move[] = [];
+    for (const card of view.hand) {
+      legal.push({ cardId: card.id, capture: [] });
+      for (const opt of captureOptions(card, view.table)) legal.push({ cardId: card.id, capture: opt.map(c => c.id) });
+    }
+    return searchMove(view, legal, rng, samples);
+  }
   const scored = scoreMoves(view, level);
   if (scored.length === 0) throw new Error('AI nema legalan potez');
   if (level === 'easy') {

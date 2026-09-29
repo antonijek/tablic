@@ -2,7 +2,7 @@
 // validaciju, bodovanje i AI radi engine.
 
 import {
-  TablicGame, TablicError, chooseMove, scoreMoves, isValidCapture, captureOptions, cardPoints,
+  TablicGame, TablicError, chooseMove, isValidCapture, captureOptions, cardPoints,
 } from './engine/dist/index.js';
 
 const ME = 0;
@@ -13,7 +13,8 @@ const SAVE_KEY = 'tablic.save.v1';
 const $ = id => document.getElementById(id);
 
 let game;
-let level = 'medium';
+// jedan nivo AI-ja — najjači (Monte Carlo)
+const level = 'hard';
 let selectedHand = null;          // id karte iz ruke
 const selectedTable = new Set();  // id-jevi karata sa stola
 let aiTimer = null;
@@ -22,7 +23,7 @@ let toastTimer = null;
 // ---------- čuvanje (samo pogodnost — igra radi i bez localStorage) ----------
 
 function save() {
-  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ level, state: game.getState() })); } catch {}
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ state: game.getState() })); } catch {}
 }
 
 function load() {
@@ -30,7 +31,6 @@ function load() {
     const raw = localStorage.getItem(SAVE_KEY);
     if (!raw) return false;
     const data = JSON.parse(raw);
-    level = data.level ?? 'medium';
     game = TablicGame.fromState(data.state);
     return true;
   } catch {
@@ -174,15 +174,11 @@ function toggleTable(id) {
 
 function suggest() {
   const v = game.getPlayerView(ME);
-  // Predlog = najbolji potez po proceni AI-ja "Majstor".
-  const scored = scoreMoves(v, 'hard');
-  const cardFilter = selectedHand ? s => s.move.cardId === selectedHand : () => true;
-  const pool = scored.filter(cardFilter);
-  if (pool.length === 0) return;
-  const best = pool.reduce((a, b) => (b.score > a.score ? b : a));
-  selectedHand = best.move.cardId;
+  // Predlog = potez koji bi odigrao AI (Monte Carlo pretraga)
+  const best = chooseMove(v, 'hard');
+  selectedHand = best.cardId;
   selectedTable.clear();
-  best.move.capture.forEach(id => selectedTable.add(id));
+  best.capture.forEach(id => selectedTable.add(id));
   render();
 }
 
@@ -290,9 +286,8 @@ $('nextDealBtn').addEventListener('click', () => {
 $('captureBtn').addEventListener('click', () => doPlay([...selectedTable]));
 $('throwBtn').addEventListener('click', () => doPlay([]));
 $('suggestBtn').addEventListener('click', suggest);
-$('menuBtn').addEventListener('click', () => { $('levelSel').value = level; $('menu').showModal(); });
+$('menuBtn').addEventListener('click', () => $('menu').showModal());
 $('closeMenuBtn').addEventListener('click', () => $('menu').close());
-$('levelSel').addEventListener('change', e => { level = e.target.value; save(); });
 $('newGameBtn').addEventListener('click', () => { $('menu').close(); newGame(); });
 
 // ---------- start ----------

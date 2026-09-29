@@ -51,6 +51,11 @@ export class TablicGame {
   }
 
   /** Kopija celog stanja (za server / testove — sadrži i tuđe karte). */
+  /** Stanje BEZ kopiranja — samo za čitanje (brze simulacije AI-ja). */
+  peek(): Readonly<TablicState> {
+    return this.state;
+  }
+
   getState(): TablicState {
     return structuredClone(this.state);
   }
