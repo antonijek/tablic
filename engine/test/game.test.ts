@@ -47,6 +47,13 @@ test('tabla: odnet ceo sto = +1 poen', () => {
   assert.equal(g.getState().players[0].tablas, 1);
 });
 
+test('tabla se ne računa igraču koji već ima 100+ poena', () => {
+  const st = makeState({ hands: ['9S 2H', '3C 4C'], table: '4H 5D', deck: 'KS KH' });
+  st.players[0].score = 100;
+  const g = TablicGame.fromState(st);
+  assert.equal(g.play(0, '9S', ['4H', '5D']).tabla, false);
+});
+
 test('tabla se ne računa poslednjom kartom partije (podrazumevano)', () => {
   const state = makeState({ hands: ['', '9S'], table: '4H 5D', deck: '', turn: 1 });
   const g = TablicGame.fromState(state);

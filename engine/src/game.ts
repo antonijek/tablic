@@ -139,7 +139,9 @@ export class TablicGame {
       s.table = s.table.filter(c => !ids.has(c.id));
       p.captured.push(card, ...captured);
       s.lastCapturer = player;
-      if (s.table.length === 0 && (this.tablaOnLastMove || !this.isLastCardOfDeal())) {
+      // Tabla se ne računa: poslednjom kartom partije, niti igraču koji već ima 100+ poena
+      // (legalbet.rs, pagat.com: "no tablas" pred kraj meča).
+      if (s.table.length === 0 && (this.tablaOnLastMove || !this.isLastCardOfDeal()) && p.score < 100) {
         tabla = true;
         p.tablas++;
       }
