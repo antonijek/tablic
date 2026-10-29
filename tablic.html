@@ -3,30 +3,48 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Tablić online — igraj besplatno</title>
-  <meta name="description" content="Tablić online protiv računara — besplatno, bez registracije, u pregledaču i na telefonu.">
-  <meta name="theme-color" content="#0f4d2e">
+  <title>Tablić online — igraj besplatno protiv računara</title>
+  <meta name="description" content="Tablić online, besplatno i bez registracije: 1 na 1, u troje ili 2 na 2 protiv računara. Prava pravila tablića, igra u pregledaču i na telefonu.">
+  <meta name="theme-color" content="#0b2e1d">
+  <link rel="canonical" href="https://tablic.igrajmo.online/">
+  <link rel="manifest" href="./manifest.json">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="./icons/icon-192.png">
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Tablić online — igraj besplatno">
+  <meta property="og:description" content="1 na 1, u troje ili 2 na 2 protiv računara. Prava pravila tablića, bez registracije.">
+  <meta property="og:url" content="https://tablic.igrajmo.online/">
+  <meta property="og:image" content="https://tablic.igrajmo.online/icons/og-image.jpg">
+  <meta property="og:locale" content="sr_RS">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "VideoGame",
+    "name": "Tablić online",
+    "url": "https://tablic.igrajmo.online/",
+    "description": "Tablić protiv računara: 1 na 1, u troje ili 2 na 2, po pravim pravilima.",
+    "inLanguage": "sr",
+    "genre": "Kartaška igra",
+    "gamePlatform": "Web pregledač",
+    "applicationCategory": "Game",
+    "operatingSystem": "Any",
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "EUR" }
+  }
+  </script>
   <link rel="stylesheet" href="./tablic.css">
 </head>
 <body>
   <header class="topbar">
     <h1>Tablić</h1>
-    <div class="score" aria-live="polite">
-      <span>Vi <b id="scoreMe">0</b></span>
-      <span class="sep">:</span>
-      <span><b id="scoreOpp">0</b> Računar</span>
-    </div>
+    <div id="scoreBar" class="score" aria-live="polite"></div>
     <button id="menuBtn" class="icon-btn" aria-label="Meni">☰</button>
   </header>
 
   <main class="board">
-    <section class="seat seat-opp">
-      <div id="oppHand" class="hand hand-opp" aria-label="Protivnikove karte"></div>
-      <div class="stats" id="oppStats"></div>
-    </section>
+    <div id="opponents" class="opponents"></div>
 
     <section class="table-area">
-      <div class="deck-info"><span id="deckCount"></span><span id="roundInfo"></span></div>
+      <div id="roundInfo" class="deck-info"></div>
       <div id="table" class="table-cards" aria-label="Sto"></div>
       <div id="toast" class="toast" role="status"></div>
     </section>
@@ -40,16 +58,22 @@
       </div>
     </section>
 
-    <section class="seat seat-me">
-      <div class="stats" id="meStats"></div>
+    <section id="seatMe" class="seat-me">
+      <div id="meLabel"></div>
       <div id="myHand" class="hand" aria-label="Vaše karte"></div>
     </section>
   </main>
 
   <dialog id="menu">
     <h2>Meni</h2>
+    <fieldset class="players-pick">
+      <legend>Nova igra</legend>
+      <label><input type="radio" name="players" value="2" id="players2" checked> 1 na 1 protiv računara</label>
+      <label><input type="radio" name="players" value="3" id="players3"> U troje (svako za sebe)</label>
+      <label><input type="radio" name="players" value="4" id="players4"> U četvoro, 2 na 2 (partner je računar)</label>
+    </fieldset>
     <div class="dialog-buttons">
-      <button id="newGameBtn" class="btn primary">Nova igra</button>
+      <button id="newGameBtn" class="btn primary">Počni novu igru</button>
       <a class="btn ghost" href="./pravila.html">Pravila</a>
       <button id="closeMenuBtn" class="btn ghost">Zatvori</button>
     </div>
@@ -58,7 +82,7 @@
   <dialog id="dealEnd">
     <h2 id="dealEndTitle">Kraj partije</h2>
     <table class="result">
-      <thead><tr><th></th><th>Vi</th><th>Računar</th></tr></thead>
+      <thead id="dealEndHead"></thead>
       <tbody id="dealEndBody"></tbody>
     </table>
     <p id="dealEndNote" class="note"></p>

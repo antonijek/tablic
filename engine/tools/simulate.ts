@@ -26,8 +26,8 @@ for (let seed = 1; seed <= n; seed++) {
   const s = g.getState();
   const ia = swap ? 1 : 0;
   if (s.winner === ia) winsA++;
-  pointsA += s.players[ia].score;
-  pointsB += s.players[1 - ia].score;
+  pointsA += s.scores[ia];
+  pointsB += s.scores[1 - ia];
   deals += s.history.length;
   tablas += s.history.reduce((x, h) => x + h.scores.reduce((y, sc) => y + sc.tablas, 0), 0);
 }

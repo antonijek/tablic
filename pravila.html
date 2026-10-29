@@ -3,8 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Pravila tablića — kako se igra tablić</title>
-  <meta name="description" content="Pravila tablića: vrednosti karata, nošenje, table i bodovanje. Kratko i jasno, sa primerima.">
+  <title>Pravila tablića — kako se igra tablić (u dvoje, troje i četvoro)</title>
+  <meta name="description" content="Kompletna pravila tablića: deljenje, vrednosti karata, nošenje, kec 1 ili 11, table, bodovanje do 101, igra u dvoje, troje i 2 na 2. Sa primerima i čestim pitanjima.">
+  <link rel="canonical" href="https://tablic.igrajmo.online/pravila.html">
+  <link rel="icon" href="./icons/icon.svg" type="image/svg+xml">
+  <meta property="og:title" content="Pravila tablića">
+  <meta property="og:description" content="Deljenje, nošenje, table i bodovanje — kompletna pravila tablića sa primerima.">
+  <meta property="og:url" content="https://tablic.igrajmo.online/pravila.html">
+  <meta property="og:image" content="https://tablic.igrajmo.online/icons/og-image.jpg">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "Koliko vredi kec u tabliću?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Kec vredi 1 ili 11, kako igraču odgovara — i kad ga igra iz ruke i kad leži na stolu." } },
+      { "@type": "Question", "name": "Da li žandar nosi žandara?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Da. Žandar vredi 12, pa nosi drugog žandara ili karte čiji je zbir 12." } },
+      { "@type": "Question", "name": "Koliko poena ima u jednoj partiji tablića?",
+        "acceptedAnswer": { "@type": "Answer", "text": "U kartama ima 22 poena, plus 3 za najviše karata — ukupno 25, plus table." } },
+      { "@type": "Question", "name": "Šta je tabla u tabliću?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Tabla je kad jednom kartom odnesete sve karte sa stola. Vredi 1 poen. Ne piše se poslednjom kartom partije, niti igraču koji već ima 100 poena." } },
+      { "@type": "Question", "name": "Do koliko se igra tablić?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Do 101 poena. Partija se uvek igra do kraja; ako obojica pređu 101, pobeđuje onaj ko ima više." } }
+    ]
+  }
+  </script>
   <link rel="stylesheet" href="./tablic.css">
   <style>
     body { display: block; }
@@ -13,45 +37,110 @@
     .rules table { border-collapse: collapse; margin: 8px 0 16px; }
     .rules th, .rules td { border: 1px solid rgba(255, 255, 255, .25); padding: 6px 10px; text-align: left; }
     .rules a { color: var(--accent); }
+    .rules .src { font-size: .9rem; color: var(--muted); }
   </style>
 </head>
 <body>
   <main class="rules">
     <p><a href="./">← Nazad na igru</a></p>
     <h1>Pravila tablića</h1>
-    <p>Tablić je najpopularnija „ribarska“ kartaška igra na Balkanu. Igra se špilom od 52 karte. Cilj je odneti što više karata koje nose poene.</p>
+    <p>Tablić je najpopularnija „ribarska“ kartaška igra u Srbiji i na Balkanu: kartom iz ruke nosite karte sa stola.
+      Igra se špilom od 52 karte, bez džokera, a cilj je odneti što više karata koje nose poene.</p>
+
+    <h2>Igrači</h2>
+    <ul>
+      <li><b>U dvoje</b> — najčešća varijanta.</li>
+      <li><b>U troje</b> — svako igra za sebe.</li>
+      <li><b>U četvoro</b> — dva para (2 na 2). Partneri sede jedan preko puta drugog i karte nose zajedno.</li>
+    </ul>
 
     <h2>Deljenje</h2>
-    <p>Na početku svaki igrač dobija 6 karata, a 4 karte se otvore na sto. Kad igrači odigraju sve karte, deli se po još 6, dok se špil ne potroši.</p>
+    <ul>
+      <li>Ko prvi deli, određuje se izvlačenjem karte („manja deli, kec jedanaest“).</li>
+      <li>Delilac svakom igraču deli <b>6 karata</b> (u dva kruga po 3) i otvara <b>4 karte na sto</b> (talon), licem nagore i odvojeno, da ih svi vide.</li>
+      <li>Deli se i igra <b>u smeru suprotnom od kazaljke na satu</b>. Prvi igra igrač sa desne strane delioca.</li>
+      <li>Kad svi odigraju svih 6 karata, isti delilac deli novih 6 (na sto se više ništa ne otvara), sve dok se špil ne potroši.
+        U dvoje se deli 4 puta, u četvoro 2 puta, a u troje 3 puta: <b>u poslednjem deljenju u troje svako dobija po 4 karte</b>.</li>
+      <li>Posle svake partije (ceo špil) deli sledeći igrač.</li>
+    </ul>
 
-    <h2>Vrednosti karata</h2>
+    <h2>Vrednosti karata za nošenje</h2>
     <table>
       <tr><th>Karta</th><th>Vrednost</th></tr>
       <tr><td>2–10</td><td>po broju</td></tr>
-      <tr><td>J (žandar)</td><td>12</td></tr>
+      <tr><td>J (žandar, pub)</td><td>12</td></tr>
       <tr><td>Q (dama)</td><td>13</td></tr>
-      <tr><td>K (kralj)</td><td>14</td></tr>
-      <tr><td>A (kec)</td><td>1 ili 11</td></tr>
+      <tr><td>K (kralj, pop)</td><td>14</td></tr>
+      <tr><td>A (kec)</td><td>1 ili 11, kako vam odgovara — i u ruci i na stolu</td></tr>
     </table>
 
     <h2>Nošenje</h2>
-    <p>Kad ste na potezu, odigrate jednu kartu. Njome nosite sa stola kartu iste vrednosti ili više karata čiji je zbir jednak vrednosti vaše karte. Možete odneti i više grupa odjednom.</p>
-    <p><b>Primer:</b> na stolu su 3, 7, 10 i 2. Desetkom nosite 10 i 3+7 odjednom. Dvojka ostaje.</p>
-    <p>Nošenje nije obavezno. Kartu uvek možete i baciti na sto.</p>
+    <p>Kad ste na potezu, odigrate jednu kartu. Njome nosite sa stola:</p>
+    <ul>
+      <li>kartu iste vrednosti, i/ili</li>
+      <li>više karata čiji je zbir jednak vrednosti vaše karte,</li>
+      <li>i to više takvih grupa odjednom — ali svaka karta sa stola može biti samo u jednoj grupi.</li>
+    </ul>
+    <p>Nošenje <b>nije obavezno</b>: kartu uvek možete i baciti na sto, pa ona ostaje tamo. Odigrana karta se ne vraća („pala karta“).</p>
+    <p><b>Primer 1:</b> na stolu su 2, 3, 4 i 7. Devetkom nosite 2+3+4 <i>ili</i> 2+7, ali ne oba, jer je dvojka samo jedna.</p>
+    <p><b>Primer 2:</b> na stolu su A, 3, 6, 7, 8 i Q.</p>
+    <ul>
+      <li>Šesticom nosite samo šesticu.</li>
+      <li>Devetkom nosite (A+8) i (3+6) odjednom.</li>
+      <li>Kraljem (14) nosite A+6+7, ili (A+Q) i (6+8), ili (A kao 11 + 3) i (6+8).</li>
+      <li>Petica ne nosi ništa i ostaje na stolu.</li>
+    </ul>
+    <p>Nošene karte se okreću <b>licem nadole</b> na vašu gomilu, pa se do kraja partije ne vidi ko je koliko odneo.
+      Dobar igrač zato pamti koje su karte prošle.</p>
 
     <h2>Tabla</h2>
-    <p>Ako odnesete sve karte sa stola, napravili ste <b>tablu</b> i dobijate 1 poen. Tabla se ne računa ako je napravljena poslednjom kartom partije, niti igraču koji već ima 100 ili više poena.</p>
+    <p>Ako jednom kartom odnesete <b>sve karte sa stola</b>, napravili ste <b>tablu</b>. Svaka tabla vredi 1 poen i piše se odmah.</p>
+    <ul>
+      <li>Tabla se ne piše ako je napravljena <b>poslednjom kartom partije</b>.</li>
+      <li>Ne piše se ni kad poslednji igrač na kraju pokupi ostatak sa stola.</li>
+      <li>Igraču (paru) koji već ima <b>100 poena</b> tabla se više ne piše: poslednji poen ne može da se dobije tablom.</li>
+    </ul>
 
-    <h2>Bodovanje</h2>
+    <h2>Kraj partije i bodovanje</h2>
+    <p>Karte koje ostanu na stolu posle poslednje karte nosi igrač koji je <b>poslednji nešto odneo</b>. Zatim se broje poeni:</p>
     <table>
       <tr><th>Šta</th><th>Poena</th></tr>
-      <tr><td>svaka 10, J, Q, K, A</td><td>1</td></tr>
-      <tr><td>10♦ (velika desetka)</td><td>2</td></tr>
+      <tr><td>svaka 10, J, Q, K i A</td><td>1</td></tr>
+      <tr><td>10♦ (velika, „dupla desetka“)</td><td>2</td></tr>
       <tr><td>2♣ (mala dvojka)</td><td>1</td></tr>
-      <tr><td>najviše karata (27 ili više)</td><td>3</td></tr>
+      <tr><td>najviše karata („tri na karte“)</td><td>3</td></tr>
       <tr><td>svaka tabla</td><td>1</td></tr>
     </table>
-    <p>Karte koje ostanu na stolu na kraju partije nosi igrač koji je poslednji nosio. Igra se do 101 poena.</p>
+    <p>U kartama ima 22 poena, sa „tri na karte“ ukupno <b>25 poena plus table</b>. Ako dvoje imaju isto najviše karata (u dvoje 26:26), tri poena ne dobija niko.
+      U četvoro se karte i table partnera sabiraju.</p>
+
+    <h2>Kraj igre</h2>
+    <p>Igra se <b>do 101 poena</b>. Partija se uvek igra do kraja, pa se tek onda broji.
+      Ako 101 pređe više igrača (parova) u istoj partiji, pobeđuje onaj ko ima više poena, a ako su izjednačeni, igra se još jedna partija.</p>
+
+    <h2>Izrazi</h2>
+    <ul>
+      <li><b>talon</b> — karte otvorene na stolu</li>
+      <li><b>nositi</b> — odneti karte sa stola</li>
+      <li><b>tabla</b> — odnet ceo sto (beleži se „reckom“)</li>
+      <li><b>tri na karte</b> — 3 poena za najviše karata</li>
+      <li><b>velika</b> (10♦) i <b>mala</b> (2♣)</li>
+    </ul>
+
+    <h2>Česta pitanja</h2>
+    <p><b>Da li žandar nosi žandara?</b> Da — žandar vredi 12, pa nosi drugog žandara ili karte čiji je zbir 12 (npr. 5+7).</p>
+    <p><b>Da li kec na stolu može da bude 11?</b> Može. Kec vredi 1 ili 11 i kad leži na stolu: kraljem nosite A+3 (11+3).</p>
+    <p><b>Moram li da nosim kad mogu?</b> Ne. Nošenje nije obavezno.</p>
+
+    <h2>Varijante</h2>
+    <p class="src">Pravila se ponegde razlikuju. Ovde (i u igri) važe srpska pravila koja navodi većina izvora.
+      Na pagat.com se pominje i da ostatak stola nosi delilac, i da igrač sa 101 poenom može da prekine partiju najavom pobede — to ovde ne važi.</p>
+    <p class="src">Izvori: <a href="https://sr.wikipedia.org/wiki/Tabli%C4%87">Wikipedija</a>,
+      <a href="https://www.pagat.com/fishing/tablic.html">pagat.com</a>,
+      <a href="https://www.igrajtablic.com/pravila.php">igrajtablic.com</a>,
+      <a href="https://tablic.live/">tablic.live</a>,
+      <a href="https://legalbet.rs/kazino-skola/tablic-kompletna-pravila-i-bodovanje-za-pocetnike/">legalbet.rs</a>,
+      <a href="https://vreme.com/vreme-uzivanja/tablic/">Vreme</a>.</p>
 
     <p><a class="btn primary" href="./">Igraj tablić</a></p>
   </main>

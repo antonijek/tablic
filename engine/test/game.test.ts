@@ -1,12 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TablicGame, TablicError, HAND_SIZE, INITIAL_TABLE } from '../src/game.js';
+import { TablicGame, TablicError } from '../src/game.js';
+import { HAND_SIZE, INITIAL_TABLE } from '../src/sides.js';
 import { chooseMove } from '../src/ai.js';
 import { makeRng } from '../src/cards.js';
 import { ids, makeState } from './helpers.js';
 
 test('početno deljenje: 6+6 u ruci, 4 na stolu, 36 u špilu', () => {
-  const g = new TablicGame({ seed: 1 });
+  const g = new TablicGame({ seed: 1, firstDealer: 1 });
   const s = g.getState();
   assert.equal(s.players[0].hand.length, HAND_SIZE);
   assert.equal(s.players[1].hand.length, HAND_SIZE);
@@ -14,6 +15,18 @@ test('početno deljenje: 6+6 u ruci, 4 na stolu, 36 u špilu', () => {
   assert.equal(s.deck.length, 52 - 12 - 4);
   assert.equal(s.turn, 0); // igra igrač posle delioca
   assert.equal(s.dealer, 1);
+});
+
+test('prvi delilac se izvlači nasumično; posle svake partije deli sledeći', () => {
+  const dealers = new Set<number>();
+  for (let seed = 1; seed <= 30; seed++) dealers.add(new TablicGame({ seed, players: 3 }).getState().dealer);
+  assert.deepEqual([...dealers].sort(), [0, 1, 2]);
+
+  const g = TablicGame.fromState({ ...makeState({ hands: ['', '', ''], table: '' }), phase: 'DEAL_END', dealer: 2 });
+  g.nextDeal();
+  const s = g.getState();
+  assert.equal(s.dealer, 0);
+  assert.equal(s.turn, 1); // prvi igra igrač posle delioca (sa njegove desne strane)
 });
 
 test('nošenje prebacuje karte, bacanje ostavlja kartu na stolu', () => {
@@ -48,10 +61,12 @@ test('tabla: odnet ceo sto = +1 poen', () => {
 });
 
 test('tabla se ne računa igraču koji već ima 100+ poena', () => {
-  const st = makeState({ hands: ['9S 2H', '3C 4C'], table: '4H 5D', deck: 'KS KH' });
-  st.players[0].score = 100;
+  const st = makeState({ hands: ['9S 2H', '3C 4C'], table: '4H 5D', deck: 'KS KH', scores: [100, 0] });
   const g = TablicGame.fromState(st);
   assert.equal(g.play(0, '9S', ['4H', '5D']).tabla, false);
+
+  const g99 = TablicGame.fromState({ ...st, scores: [99, 0] });
+  assert.equal(g99.play(0, '9S', ['4H', '5D']).tabla, true);
 });
 
 test('tabla se ne računa poslednjom kartom partije (podrazumevano)', () => {
@@ -97,8 +112,8 @@ test('PlayerView ne otkriva protivnikovu ruku ni špil', () => {
   assert.equal((v.players as { handCount: number }[])[1].handCount, 6);
 });
 
-function playMatch(seed: number, levels: ['easy' | 'medium' | 'hard', 'easy' | 'medium' | 'hard']) {
-  const g = new TablicGame({ seed });
+function playMatch(seed: number, levels: ('easy' | 'medium' | 'hard')[]) {
+  const g = new TablicGame({ seed, players: levels.length as 2 | 3 | 4 });
   const rng = makeRng(seed + 1000);
   let guard = 0;
   while (g.getState().phase !== 'MATCH_END') {
@@ -124,6 +139,17 @@ test('ceo meč AI vs AI se završava, invarijante važe (20 mečeva)', () => {
   for (let seed = 1; seed <= 20; seed++) {
     const s = playMatch(seed, ['medium', 'easy']);
     assert.notEqual(s.winner, null);
-    assert.ok(s.players[s.winner!].score >= 101);
+    assert.ok(s.scores[s.winner!] >= 101);
+  }
+});
+
+test('ceo meč u troje i u četvoro se završava, invarijante važe', () => {
+  for (let seed = 1; seed <= 6; seed++) {
+    const three = playMatch(seed, ['medium', 'easy', 'medium']);
+    assert.equal(three.scores.length, 3);
+    assert.ok(three.scores[three.winner!] >= 101);
+    const four = playMatch(seed, ['medium', 'easy', 'medium', 'easy']);
+    assert.equal(four.scores.length, 2);
+    assert.ok(four.scores[four.winner!] >= 101);
   }
 });

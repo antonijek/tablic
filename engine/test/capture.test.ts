@@ -58,6 +58,24 @@ test('captureOptions: bez nošenja kad nema zbira', () => {
   assert.deepEqual(captureOptions(c('2S'), cards('5H 9D')), []);
 });
 
+test('pagat.com: na stolu 2 3 4 7, devetka nosi 2+3+4 ili 2+7, ali ne oba', () => {
+  assert.ok(isValidCapture(c('9S'), cards('2H 3D 4C')));
+  assert.ok(isValidCapture(c('9S'), cards('2H 7C')));
+  assert.ok(!isValidCapture(c('9S'), cards('2H 3D 4C 7C')));
+});
+
+test('pagat.com: na stolu A 3 6 7 8 Q', () => {
+  const table = cards('AH 3D 6C 7S 8H QD');
+  const keys = (rank: string) => captureOptions(c(rank), table).map(o => ids(o).join(' '));
+  assert.deepEqual(keys('6S'), ['6C']);                         // šestica nosi samo šesticu
+  assert.ok(isValidCapture(c('9S'), cards('AH 8H 3D 6C')));     // (A+8) + (3+6)
+  assert.ok(isValidCapture(c('10S'), cards('7S 3D')));          // 7+3
+  assert.ok(isValidCapture(c('KS'), cards('AH 6C 7S')));        // A(1)+6+7
+  assert.ok(isValidCapture(c('KS'), cards('AH QD 6C 8H')));     // (A+Q) + (6+8)
+  assert.ok(isValidCapture(c('KS'), cards('AH 3D 6C 8H')));     // (A(11)+3) + (6+8)
+  assert.deepEqual(keys('5S'), []);                             // petica ne nosi ništa, ostaje na stolu
+});
+
 test('clearingRanks: koje karte prave tablu', () => {
   assert.deepEqual(clearingRanks(cards('4H 5D')), ['9']);
   // 5+5 → 5 (dve grupe) i 10

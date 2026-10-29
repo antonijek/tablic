@@ -13,19 +13,28 @@ export interface Card {
   rank: Rank;
 }
 
-// MVP: 1 na 1. Tip je ostavljen širi da bi 3 igrača / 2 na 2 kasnije
-// ušli bez menjanja potpisa.
+/** Mesto za stolom, po redu igranja (igra se u smeru suprotnom od kazaljke na satu). */
 export type Position = number;
 
+/**
+ * Strana koja skuplja poene: u igri u dvoje i troje to je igrač, a u četvoro par
+ * (mesta 0 i 2 protiv 1 i 3, partneri sede unakrsno).
+ */
+export type Side = number;
+
+export type PlayerCount = 2 | 3 | 4;
+
 export interface TablicOptions {
-  /** Broj igrača — za sada samo 2. */
-  players?: 2;
+  /** Broj igrača: 2, 3 (svako za sebe) ili 4 (2 na 2). Podrazumevano 2. */
+  players?: PlayerCount;
   /** Seed za mešanje (testovi, replay). Bez seed-a koristi Math.random. */
   seed?: number;
   /** Do koliko poena se igra meč. Podrazumevano 101. */
   targetScore?: number;
   /** Da li se tabla računa i kad je napravljena poslednjom kartom partije. */
   tablaOnLastMove?: boolean;
+  /** Delilac prve partije. Bez ovoga se izvlači nasumično (kao sečenje za delioca). */
+  firstDealer?: Position;
 }
 
 export type Phase = 'PLAYING' | 'DEAL_END' | 'MATCH_END';
@@ -34,8 +43,6 @@ export interface PlayerState {
   hand: Card[];
   captured: Card[];
   tablas: number;
-  /** Ukupan zbir poena u meču (zaključno sa završenim partijama). */
-  score: number;
 }
 
 export interface MoveRecord {
@@ -46,7 +53,7 @@ export interface MoveRecord {
 }
 
 export interface DealScore {
-  player: Position;
+  side: Side;
   cardPoints: number;   // desetke, slike, kečevi, 2♣, 10♦
   mostCards: number;    // 3 ili 0
   tablas: number;
@@ -66,20 +73,22 @@ export interface TablicState {
   phase: Phase;
   /** Redni broj partije (jedna partija = ceo špil od 52 karte). */
   dealNo: number;
-  /** Deljenje unutar partije: 1..4 za 2 igrača. */
+  /** Deljenje unutar partije: 1..4 u dvoje, 1..3 u troje, 1..2 u četvoro. */
   round: number;
   dealer: Position;
   turn: Position;
   deck: Card[];
   table: Card[];
   players: PlayerState[];
+  /** Zbir poena u meču po strani (zaključno sa završenim partijama). */
+  scores: number[];
   lastCapturer: Position | null;
   lastMove: MoveRecord | null;
   history: DealResult[];
-  winner: Position | null;
+  winner: Side | null;
 }
 
-/** Ono što jedan igrač sme da vidi (tuđa ruka i špil su skriveni). */
+/** Ono što jedan igrač sme da vidi (tuđe ruke i špil su skriveni). */
 export interface PlayerView {
   phase: Phase;
   dealNo: number;
@@ -87,21 +96,26 @@ export interface PlayerView {
   dealer: Position;
   turn: Position;
   me: Position;
+  /** Koliko deljenja ima jedna partija (4, 3 ili 2, zavisi od broja igrača). */
+  roundsPerDeal: number;
   deckCount: number;
   table: Card[];
   hand: Card[];
   players: {
+    side: Side;
     handCount: number;
-    /** Nošene karte su javne (u igri uživo se vidi šta je ko odneo). */
+    /**
+     * Šta je ko odneo: svi su gledali poteze, pa to igrač može da zapamti (AI pamti savršeno).
+     * Po pravilima se nošene karte okreću licem nadole, pa ih ekran ne prikazuje.
+     */
     captured: Card[];
     tablas: number;
-    score: number;
-    capturedPoints: number;
   }[];
+  scores: number[];
   lastCapturer: Position | null;
   lastMove: MoveRecord | null;
   history: DealResult[];
-  winner: Position | null;
+  winner: Side | null;
 }
 
 export interface Move {

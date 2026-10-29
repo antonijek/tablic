@@ -1,12 +1,13 @@
 // AI za Tablić — radi SAMO nad PlayerView (ne vidi tuđe karte ni špil).
 //
-// Ocena poteza = ono što odmah dobijam − ono što protivnik verovatno može da
-// uzme sledećim potezom (uključujući tablu). Verovatnoća da protivnik ima
-// neki rang računa se iz karata koje još nisu viđene (brojanje karata).
+// Ocena poteza = ono što odmah dobijam − ono što sledeći igrač (uvek protivnik,
+// i u troje i u 2 na 2) verovatno može da uzme svojim potezom (uključujući tablu).
+// Verovatnoća da on ima neki rang računa se iz karata koje još nisu viđene.
 
 import type { Card, Move, PlayerView, Rank } from './types.js';
 import { cardPoints, createDeck, RANKS, makeCard } from './cards.js';
 import { captureOptions } from './capture.js';
+import { handSizeFor } from './sides.js';
 import { searchMove } from './search.js';
 
 export type AiLevel = 'easy' | 'medium' | 'hard';
@@ -45,7 +46,9 @@ function listMoves(view: PlayerView): { card: Card; capture: Card[] }[] {
 
 export function scoreMoves(view: PlayerView, level: AiLevel = 'medium'): Scored[] {
   const me = view.me;
-  const opp = (me + 1) % view.players.length;
+  const n = view.players.length;
+  const mySide = view.players[me].side;
+  const opp = (me + 1) % n;
   const oppHand = view.players[opp].handCount;
 
   // Neviđene karte (mogu biti kod protivnika ili u špilu).
@@ -58,9 +61,10 @@ export function scoreMoves(view: PlayerView, level: AiLevel = 'medium'): Scored[
   for (const c of unseen) unseenByRank.set(c.rank, (unseenByRank.get(c.rank) ?? 0) + 1);
 
   const myHandAfter = view.hand.length - 1;
-  const finalMove = view.deckCount === 0 && oppHand === 0 && myHandAfter === 0;
+  const othersEmpty = view.players.every((p, i) => i === me || p.handCount === 0);
+  const finalMove = view.deckCount === 0 && othersEmpty && myHandAfter === 0;
   // Sledeći protivnikov potez je iz ove ruke, ili iz nove ruke ako je ova prazna.
-  const oppNextHand = oppHand > 0 ? oppHand : (view.deckCount > 0 ? 6 : 0);
+  const oppNextHand = oppHand > 0 ? oppHand : handSizeFor(view.deckCount, n);
   const riskWeight = level === 'hard' ? 1.0 : level === 'medium' ? 0.8 : 0.3;
 
   return listMoves(view).map(({ card, capture }) => {
@@ -78,8 +82,9 @@ export function scoreMoves(view: PlayerView, level: AiLevel = 'medium'): Scored[
     if (finalMove) {
       // Ostatak sa stola nosi poslednji koji je nosio.
       const lastCapturer = capture.length > 0 ? me : view.lastCapturer;
-      if (lastCapturer === me) gain += value(remaining);
-      else if (lastCapturer !== null) gain -= value(remaining);
+      if (lastCapturer !== null) {
+        gain += (view.players[lastCapturer].side === mySide ? 1 : -1) * value(remaining);
+      }
     } else if (oppNextHand > 0 && remaining.length > 0) {
       // Najgori očekivani protivnikov odgovor, po rangu.
       let worst = 0;

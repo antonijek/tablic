@@ -2,5 +2,6 @@ export * from './types.js';
 export * from './cards.js';
 export * from './capture.js';
 export * from './scoring.js';
+export * from './sides.js';
 export * from './game.js';
 export * from './ai.js';

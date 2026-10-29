@@ -34,10 +34,17 @@ server {
     root /var/www/tablic;
     index tablic.html;
     add_header Cache-Control \"no-cache\";
-    # samo ono što treba browseru
-    location ~ ^/(node_modules|engine/(src|test|tools|node_modules)|tools|docs)/ { return 404; }
-    location ~ /\. { return 404; }
-    location / { try_files \$uri \$uri/ =404; }
+    # Samo javni fajlovi (allowlist); sve ostalo (izvorni kod, alati, .git, README) je 404.
+    location = / { try_files /tablic.html =404; }
+    location ~ ^/(tablic\.html|pravila\.html|app\.js|tablic\.css|sw\.js|manifest\.json|robots\.txt|sitemap\.xml)\$ { try_files \$uri =404; }
+    location ~ ^/ui/[a-z-]+\.js\$ { try_files \$uri =404; }
+    location ~ ^/engine/dist/[a-z]+\.js\$ { try_files \$uri =404; }
+    location ~ ^/icons/(icon\.svg|icon-[a-z0-9-]+\.png|og-image\.jpg)\$ { try_files \$uri =404; }
+    location ~ ^/icons/cards/[0-9A-Za-z-]+\.webp\$ {
+        add_header Cache-Control \"public, max-age=604800\";
+        try_files \$uri =404;
+    }
+    location / { return 404; }
 }
 NGINX
       ln -sf /etc/nginx/sites-available/$DOMAIN /etc/nginx/sites-enabled/$DOMAIN
