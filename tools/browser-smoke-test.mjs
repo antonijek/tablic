@@ -90,7 +90,7 @@ try {
     for (let d = 1; ; d++) {
       moves += await playUntilDealEnd(page);
       const title = await page.textContent('#dealEndTitle');
-      if (/Pobeda|Pobedi/.test(title) || d >= deals) {
+      if (/Pobed/.test(title) || d >= deals) {
         console.log(`${tag} ${title} — ${d} partija, ${moves} mojih poteza`);
         break;
       }

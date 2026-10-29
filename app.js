@@ -3,7 +3,7 @@
 
 import { TablicGame, TablicError, chooseMove, makeRng } from './engine/dist/index.js';
 import { cardEl, cardName } from './ui/cards.js';
-import { ME, playerName, renderOpponents, renderScoreBar, seatLabel } from './ui/seats.js';
+import { ME, playerName, renderMe, renderOpponents, renderScoreBar } from './ui/seats.js';
 import { fillDealEnd } from './ui/deal-end.js';
 import { updateControls } from './ui/controls.js';
 import { loadGame, saveGame, NORMAL_SLOT } from './ui/storage.js';
@@ -72,7 +72,7 @@ function render() {
   if (preview) table.push(cardEl(preview.card, { incoming: true }));
   $('table').replaceChildren(...table);
 
-  $('meLabel').replaceChildren(seatLabel(v, ME));
+  renderMe($('seatMe'), v, myTurn);
   $('seatMe').classList.toggle('turn', myTurn);
   $('myHand').replaceChildren(...v.hand.map(c => cardEl(c, {
     selected: selectedHand === c.id,
@@ -214,7 +214,6 @@ $('throwBtn').addEventListener('click', () => doPlay([]));
 $('suggestBtn').addEventListener('click', suggest);
 $('menuBtn').addEventListener('click', () => {
   document.querySelector(`input[name="players"][value="${game.playerCount}"]`).checked = true;
-  $('soundToggle').checked = soundOn();
   $('menu').showModal();
 });
 $('closeMenuBtn').addEventListener('click', () => $('menu').close());
@@ -223,7 +222,9 @@ $('newGameBtn').addEventListener('click', () => {
   startNormal(Number(document.querySelector('input[name="players"]:checked').value));
 });
 $('dailyBtn').addEventListener('click', () => { $('menu').close(); startDaily(); });
-$('soundToggle').addEventListener('change', e => setSound(e.target.checked, report));
+function showSound() { $('soundBtn').textContent = soundOn() ? '🔊' : '🔇'; }
+$('soundBtn').addEventListener('click', () => { setSound(!soundOn(), report); showSound(); });
+showSound();
 $('closeDailyBtn').addEventListener('click', () => $('dailyDone').close());
 
 // ---------- start ----------

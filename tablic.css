@@ -1,117 +1,146 @@
+/* Tablić — izgled kao Lora i Remi: soba, drveni ovalni sto, pločice igrača. */
 :root {
-  --felt: #0f5132;
-  --felt-dark: #0a3a24;
-  --bar: #0b2e1d;
-  --ink: #f3f6f4;
-  --muted: #a9c2b4;
+  --room: #0d1f17;
+  --room-2: #13291f;
+  --felt: #177245;
+  --felt-dark: #0e4d2e;
+  --rail: #6b4424;
+  --rail-dark: #4a2e17;
+  --bar: #091610;
+  --ink: #f5f7f5;
+  --muted: #b8cbbf;
   --card: #fffdf8;
   --card-edge: #cfc8b8;
-  --black: #1b1b1b;
-  --red: #c0262d;
   --accent: #f2c14e;
   --accent-ink: #2b2100;
   --select: #3fa7ff;
+  --plate: rgba(8, 20, 14, .82);
+  --plate-edge: rgba(255, 255, 255, .14);
   --dialog-bg: #fbfaf7;
   --dialog-ink: #1b1b1b;
-  --card-w: clamp(46px, 13vw, 78px);
-  --mini-w: clamp(20px, 5.5vw, 36px);
+  --chip-bg: #ffffff;
+  --chip-ink: #111111;
+  /* boje avatara: iste kao u Lori i Remiju (mesto 0 = vi) */
+  --av0: #2f7dd1;
+  --av1: #c0392b;
+  --av2: #8e44ad;
+  --av3: #d68910;
+
+  /* veličine prate i širinu i visinu prozora */
+  --card-w: clamp(46px, min(12vw, 10.5vh), 86px);
+  --hand-w: clamp(50px, min(14vw, 12vh), 96px);
+  --back-w: clamp(20px, min(4.6vw, 4.6vh), 40px);
 }
 @media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) {
-    --felt: #0b3d26;
-    --felt-dark: #072a1a;
-    --bar: #051a10;
-    --card: #f1ede4;
-    --dialog-bg: #1d2420;
-    --dialog-ink: #eef2ef;
-  }
+  :root:not([data-theme="light"]) { --dialog-bg: #1d2420; --dialog-ink: #eef2ef; }
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; height: 100%; }
 body {
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--ink);
-  background: radial-gradient(ellipse at center, var(--felt) 0%, var(--felt-dark) 100%);
-  display: flex;
-  flex-direction: column;
+  background: radial-gradient(ellipse at 50% 40%, var(--room-2), var(--room) 70%);
+  height: 100dvh; overflow: hidden;
+  display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr);
   -webkit-tap-highlight-color: transparent;
 }
 
-.topbar {
-  display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; padding: 8px 16px; background: var(--bar);
-}
-.topbar h1 { font-size: 1.15rem; margin: 0; letter-spacing: .02em; }
-.score { font-size: 1rem; display: flex; gap: 6px; align-items: baseline; }
-.score b { font-size: 1.25rem; color: var(--accent); }
+/* ---------- zaglavlje ---------- */
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 6px 12px; background: var(--bar); }
+.topbar h1 { font-size: 1.15rem; margin: 0; letter-spacing: .03em; }
+.score { font-size: .95rem; display: flex; gap: 6px; align-items: baseline; flex-wrap: wrap; justify-content: center; }
+.score b { font-size: 1.2rem; color: var(--accent); }
 .score .sep { color: var(--muted); }
-.icon-btn { background: none; border: 0; color: var(--ink); font-size: 1.4rem; cursor: pointer; padding: 4px 8px; }
-
-.score .mine { color: var(--ink); }
 .score span:not(.mine):not(.sep) { color: var(--muted); }
+.top-buttons { display: flex; }
+.icon-btn { background: none; border: 0; color: var(--ink); font-size: 1.35rem; cursor: pointer; padding: 4px 8px; }
 
-.board {
-  flex: 1; display: grid; grid-template-rows: auto 1fr auto auto;
-  gap: 8px; padding: 8px 16px 16px; max-width: 900px; width: 100%; margin: 0 auto;
+/* ---------- soba i sto ---------- */
+.room { position: relative; min-height: 0; }
+.table {
+  position: absolute; inset: 9% 8% 15%;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at 50% 45%, var(--felt) 0%, var(--felt-dark) 75%);
+  border: clamp(8px, 1.4vw, 16px) solid var(--rail);
+  box-shadow: 0 0 0 3px var(--rail-dark), inset 0 0 40px rgba(0, 0, 0, .45), 0 12px 30px rgba(0, 0, 0, .5);
 }
-
-/* Protivnici u gornjem redu: levi, preko puta, desni (igra ide suprotno od kazaljke na satu). */
-.opponents { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
-.opponents[data-players="2"] { justify-content: center; }
-.opp {
-  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 8px;
-  border-radius: 12px; border: 2px solid transparent; min-width: 0; flex: 0 1 auto;
-}
-.opp.turn, .seat-me.turn { border-color: var(--accent); background: rgba(255, 255, 255, .05); }
-.opp.partner .seat-label b { color: var(--accent); }
-.seat-label { display: flex; align-items: center; justify-content: center; gap: 6px; font-size: .9rem; flex-wrap: wrap; }
-.seat-label .chip {
-  font-size: .7rem; font-weight: 700; padding: 1px 6px; border-radius: 999px;
-  background: var(--accent); color: var(--accent-ink);
-}
-.seat-label .tablas { color: var(--accent); font-weight: 600; font-size: .8rem; }
-.mini-hand { display: flex; min-height: calc(var(--mini-w) * 1.4); }
-.mini-hand .card { width: var(--mini-w); border-radius: 4px; }
-.mini-hand .card + .card { margin-left: calc(var(--mini-w) * -0.55); }
-
-.seat-me { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px; border-radius: 12px; border: 2px solid transparent; }
-.hand { display: flex; justify-content: center; gap: 6px; flex-wrap: wrap; min-height: calc(var(--card-w) * 1.4); }
-
 .table-area {
-  position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center;
-  border: 2px dashed rgba(255, 255, 255, .15); border-radius: 16px; padding: 12px; min-height: 160px;
+  position: absolute; inset: 22% 17% 27%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
 }
-.deck-info { position: absolute; top: 6px; left: 10px; font-size: .8rem; color: var(--muted); display: flex; gap: 10px; }
-.table-cards { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-width: 100%; }
+.deck-info { font-size: .78rem; color: var(--muted); text-align: center; }
+.table-cards { display: flex; flex-wrap: wrap; justify-content: center; align-content: center; gap: 6px; max-width: 100%; }
 
+/* ---------- mesta i pločice ---------- */
+.seat { position: absolute; display: flex; align-items: center; gap: 6px; z-index: 3; }
+.seat-top { top: 0; left: 50%; transform: translateX(-50%); }
+.seat-left { left: 1%; top: 48%; transform: translateY(-50%); flex-direction: column; }
+.seat-right { right: 1%; top: 48%; transform: translateY(-50%); flex-direction: column; }
+.seat-me { bottom: 1%; left: 50%; transform: translateX(-50%); }
+
+.plate {
+  position: relative; display: flex; align-items: center; gap: 8px;
+  background: var(--plate); border: 1px solid var(--plate-edge); border-radius: 14px;
+  padding: 6px 12px 6px 6px; box-shadow: 0 4px 12px rgba(0, 0, 0, .35);
+}
+.plate.active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent), 0 0 18px rgba(242, 193, 78, .45); }
+.avatar {
+  width: 36px; height: 36px; border-radius: 50%; flex: none;
+  display: grid; place-items: center; font-weight: 800; font-size: 1.05rem; color: var(--ink);
+}
+.avatar.p0 { background: var(--av0); }
+.avatar.p1 { background: var(--av1); }
+.avatar.p2 { background: var(--av2); }
+.avatar.p3 { background: var(--av3); }
+.plate .name { font-weight: 700; font-size: 1rem; line-height: 1.15; white-space: nowrap; }
+.plate .sub { font-size: .78rem; color: var(--muted); white-space: nowrap; }
+.plate .sub.tablas { color: var(--accent); font-weight: 600; }
+.dealer-chip {
+  position: absolute; top: -9px; right: -9px; width: 24px; height: 24px; border-radius: 50%;
+  background: var(--chip-bg); color: var(--chip-ink); font-weight: 800; font-size: .8rem; display: grid; place-items: center;
+  border: 2px solid var(--accent); box-shadow: 0 2px 4px rgba(0, 0, 0, .4);
+}
+.seat-right .dealer-chip { right: auto; left: -9px; }
+
+.mini-hand { display: flex; }
+.mini-hand .card { width: var(--back-w); border-radius: 4px; }
+.mini-hand .card + .card { margin-left: calc(var(--back-w) * -.62); }
+.seat-left .mini-hand, .seat-right .mini-hand { flex-direction: column; }
+.seat-left .mini-hand .card + .card, .seat-right .mini-hand .card + .card { margin-left: 0; margin-top: calc(var(--back-w) * -1.15); }
+
+/* ---------- karte ---------- */
 .card {
   width: var(--card-w); aspect-ratio: 5 / 7; border-radius: 7px;
   background: var(--card); border: 1px solid var(--card-edge);
   box-shadow: 0 2px 4px rgba(0, 0, 0, .35);
-  position: relative; color: var(--black); user-select: none; overflow: hidden;
-  font-weight: 700; cursor: default; transition: transform .12s ease, box-shadow .12s ease;
-  flex: none;
+  position: relative; user-select: none; overflow: hidden;
+  cursor: default; transition: transform .12s ease, box-shadow .12s ease; flex: none;
 }
 .card img { display: block; width: 100%; height: 100%; object-fit: contain; pointer-events: none; }
 .card .pts {
-  position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); font-size: calc(var(--card-w) * .16);
+  position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); font-size: calc(var(--card-w) * .16); font-weight: 700;
   background: var(--accent); color: var(--accent-ink); border-radius: 6px; padding: 0 4px; line-height: 1.3;
 }
 .card.back { border: 0; background: none; }
-.card.taking { box-shadow: 0 0 0 3px var(--accent), 0 6px 10px rgba(0, 0, 0, .4); transform: translateY(-4px); }
-.card.incoming { box-shadow: 0 0 0 3px var(--select), 0 6px 10px rgba(0, 0, 0, .4); animation: incoming .3s ease; }
-@keyframes incoming { from { transform: translateY(-24px) scale(.9); opacity: 0; } }
 .card.clickable { cursor: pointer; }
 .card.clickable:hover { transform: translateY(-3px); }
 .card.selected { transform: translateY(-10px); box-shadow: 0 0 0 3px var(--select), 0 6px 10px rgba(0, 0, 0, .4); }
 .table-cards .card.selected { transform: translateY(-4px); }
+.card.taking { box-shadow: 0 0 0 3px var(--accent), 0 6px 10px rgba(0, 0, 0, .4); transform: translateY(-4px); }
+.card.incoming { box-shadow: 0 0 0 3px var(--select), 0 6px 10px rgba(0, 0, 0, .4); animation: incoming .3s ease; }
+@keyframes incoming { from { transform: translateY(-24px) scale(.9); opacity: 0; } }
 
-.controls { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.hint { margin: 0; min-height: 1.3em; text-align: center; font-size: .95rem; }
+/* ---------- moja ruka i dugmad ---------- */
+.bottom { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 4px 10px 10px; }
+.hint { margin: 0; min-height: 1.3em; text-align: center; font-size: .92rem; }
+.hand { display: flex; justify-content: center; gap: 5px; flex-wrap: nowrap; min-height: calc(var(--hand-w) * 1.4); }
+.hand .card { width: var(--hand-w); }
+.hand .card .pts { font-size: calc(var(--hand-w) * .16); }
 .buttons { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 .btn {
-  font: inherit; font-weight: 600; padding: 10px 16px; border-radius: 10px; border: 1px solid rgba(255,255,255,.25);
+  font: inherit; font-weight: 600; padding: 9px 16px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, .25);
   background: rgba(255, 255, 255, .1); color: var(--ink); cursor: pointer; text-decoration: none; text-align: center;
 }
 .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
@@ -119,43 +148,46 @@ body {
 .btn:disabled { opacity: .4; cursor: not-allowed; }
 
 .toast {
-  position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
-  background: rgba(0, 0, 0, .7); padding: 6px 12px; border-radius: 8px; font-size: .9rem;
-  opacity: 0; transition: opacity .2s; pointer-events: none; max-width: 90%; text-align: center;
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  background: rgba(0, 0, 0, .75); padding: 6px 12px; border-radius: 8px; font-size: .88rem;
+  opacity: 0; transition: opacity .2s; pointer-events: none; width: max-content; max-width: 100%; text-align: center; z-index: 4;
 }
 .toast.show { opacity: 1; }
 .toast.tabla { background: var(--accent); color: var(--accent-ink); font-weight: 700; }
 
+/* ---------- prozori ---------- */
 dialog {
   border: 0; border-radius: 14px; padding: 20px; background: var(--dialog-bg); color: var(--dialog-ink);
   width: min(420px, calc(100vw - 32px));
 }
 dialog::backdrop { background: rgba(0, 0, 0, .55); }
 dialog h2 { margin-top: 0; }
-dialog label { display: flex; flex-direction: column; gap: 6px; font-weight: 600; }
-dialog select { font: inherit; padding: 8px; border-radius: 8px; }
 dialog .btn { color: var(--dialog-ink); border-color: rgba(0, 0, 0, .2); }
 dialog .btn.primary { color: var(--accent-ink); }
 .dialog-buttons { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+.result { width: 100%; border-collapse: collapse; }
+.result th, .result td { padding: 6px 8px; text-align: right; border-bottom: 1px solid rgba(127, 127, 127, .25); }
+.result th:first-child, .result td:first-child { text-align: left; }
+.result tr.total td { font-weight: 700; }
+.note { font-size: .9rem; opacity: .8; }
 .players-pick { border: 1px solid rgba(127, 127, 127, .35); border-radius: 10px; padding: 8px 12px 12px; margin: 0; }
 .players-pick legend { font-weight: 700; padding: 0 4px; }
-.players-pick label { flex-direction: row; align-items: center; gap: 8px; font-weight: 500; padding: 6px 0; cursor: pointer; }
+.players-pick label { display: flex; align-items: center; gap: 8px; padding: 6px 0; cursor: pointer; }
 .menu-daily { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; }
 .menu-daily .btn { align-self: flex-start; }
-dialog label.toggle { flex-direction: row; align-items: center; gap: 8px; margin-top: 14px; cursor: pointer; }
 
-/* Proslava table: sto se strese, a preko njega iskoči natpis. */
+/* ---------- proslava table: sto se strese, preko njega iskoči natpis ---------- */
 .table-area.slam { animation: slam .45s ease; }
 @keyframes slam {
   0% { transform: scale(1); }
-  25% { transform: scale(1.025) rotate(-.4deg); }
-  50% { transform: scale(.99) rotate(.3deg); }
+  25% { transform: scale(1.03) rotate(-.5deg); }
+  50% { transform: scale(.99) rotate(.4deg); }
   100% { transform: scale(1); }
 }
 .tabla-burst {
   position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
   font-size: clamp(2.4rem, 11vw, 4.5rem); font-weight: 900; letter-spacing: .06em; color: var(--accent);
-  text-shadow: 0 3px 0 var(--accent-ink), 0 6px 18px rgba(0, 0, 0, .6); pointer-events: none;
+  text-shadow: 0 3px 0 var(--accent-ink), 0 6px 18px rgba(0, 0, 0, .6); pointer-events: none; z-index: 5;
   animation: burst 1.5s ease forwards;
 }
 .tabla-burst small { font-size: .32em; letter-spacing: 0; color: var(--ink); text-shadow: 0 2px 6px rgba(0, 0, 0, .7); }
@@ -169,12 +201,9 @@ dialog label.toggle { flex-direction: row; align-items: center; gap: 8px; margin
 @media (prefers-reduced-motion: reduce) {
   .table-area.slam, .tabla-burst, .card.incoming { animation: none; }
 }
-.result { width: 100%; border-collapse: collapse; }
-.result th, .result td { padding: 6px 8px; text-align: right; border-bottom: 1px solid rgba(127, 127, 127, .25); }
-.result th:first-child, .result td:first-child { text-align: left; }
-.result tr.total td { font-weight: 700; }
-.note { font-size: .9rem; opacity: .8; }
 
-@media (min-width: 700px) {
-  :root { --card-w: 78px; --mini-w: 36px; }
+/* uski ekran: bočne pločice bez imena ispod avatara, da ne pokriju karte na stolu */
+@media (max-width: 480px) {
+  .seat-left .plate, .seat-right .plate { flex-direction: column; padding: 6px; gap: 2px; text-align: center; }
+  .table-area { inset: 22% 22% 27%; }
 }

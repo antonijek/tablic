@@ -20,13 +20,13 @@ function leftoverNote(last, n) {
   if (last.leftoverTo === null) return '';
   const cards = last.leftover.map(cardName).join(' ');
   if (last.leftoverTo === ME) return `Ostatak sa stola (${cards}) nosite vi, jer ste poslednji nosili.`;
-  return `Ostatak sa stola (${cards}) nosi ${playerName(last.leftoverTo, n)}, jer je poslednji nosio.`;
+  return `Ostatak sa stola (${cards}) dobija poslednji koji je nosio: ${playerName(last.leftoverTo, n)}.`;
 }
 
 function matchTitle(state, n, mySide) {
   if (state.winner === mySide) return 'Pobeda! 🎉';
   if (n === 4) return 'Pobedili su oni';
-  return `Pobedio je ${playerName(state.winner, n)}`;
+  return `Pobednik: ${playerName(state.winner, n)}`;
 }
 
 /** Popuni prozor iz stanja igre; vraća false ako još nema završene partije. */
