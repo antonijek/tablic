@@ -1,12 +1,15 @@
 // UI za Tablić — tanak sloj nad engine-om (engine/dist). Nema poslovne logike:
 // validaciju, bodovanje i AI radi engine.
 
-import { TablicGame, TablicError, chooseMove, isValidCapture, captureOptions } from './engine/dist/index.js';
+import { TablicGame, TablicError, chooseMove, makeRng } from './engine/dist/index.js';
 import { cardEl, cardName } from './ui/cards.js';
 import { ME, playerName, renderOpponents, renderScoreBar, seatLabel } from './ui/seats.js';
 import { fillDealEnd } from './ui/deal-end.js';
-import { loadGame, saveGame } from './ui/storage.js';
+import { updateControls } from './ui/controls.js';
+import { loadGame, saveGame, NORMAL_SLOT } from './ui/storage.js';
+import { celebrateTabla, setSound, soundOn } from './ui/celebrate.js';
 import { toast } from './ui/toast.js';
+import * as daily from './ui/daily.js';
 
 const AI_DELAY = 600;     // pauza pre nego što računar odigra
 const PREVIEW_MS = 900;   // koliko se vidi potez računara pre nego što karte odu sa stola
@@ -14,22 +17,39 @@ const PREVIEW_MS = 900;   // koliko se vidi potez računara pre nego što karte 
 const $ = id => document.getElementById(id);
 
 let game;
+let slot = NORMAL_SLOT;           // gde se čuva partija (obična ili dnevni izazov)
+let dailyKey = null;              // datum izazova, ili null u običnoj igri
 let selectedHand = null;          // id karte iz ruke
 const selectedTable = new Set();  // id-jevi karata sa stola
 let aiTimer = null;
 let preview = null;               // potez računara koji se upravo prikazuje: { player, card, capture }
 
-const save = () => saveGame(game, msg => toast(msg));
-const mySide = () => game.sideOf(ME);
+const report = msg => toast(msg);
+const save = () => saveGame(game, report, slot);
 
-function newGame(players) {
+function start(newGame, newSlot, key) {
   clearTimeout(aiTimer);
   preview = null;
-  game = new TablicGame({ players });
   clearSelection();
+  game = newGame;
+  slot = newSlot;
+  dailyKey = key;
   save();
   render();
-  scheduleAi();
+  if (game.peek().phase === 'PLAYING') scheduleAi();
+  else showDealEnd();
+}
+
+const startNormal = players => start(new TablicGame({ players }), NORMAL_SLOT, null);
+const resumeNormal = () => start(loadGame(report) ?? new TablicGame(), NORMAL_SLOT, null);
+
+function startDaily() {
+  const key = daily.todayKey();
+  const results = daily.loadResults(report);
+  if (results[key]) { showDailyDone(key, results); return; }
+  const dailySlot = daily.stateSlot(key, report);
+  const g = loadGame(report, dailySlot) ?? new TablicGame({ players: 2, seed: daily.seedFor(key), firstDealer: 1 });
+  start(g, dailySlot, key);
 }
 
 // ---------- render ----------
@@ -40,7 +60,8 @@ function render() {
 
   renderScoreBar($('scoreBar'), v);
   renderOpponents($('opponents'), v, preview);
-  $('roundInfo').textContent = `Partija ${v.dealNo} · deljenje ${v.round}/${v.roundsPerDeal} · u špilu ${v.deckCount}`;
+  const where = dailyKey ? `Dnevni izazov ${daily.dayLabel(dailyKey)}` : `Partija ${v.dealNo}`;
+  $('roundInfo').textContent = `${where} · deljenje ${v.round}/${v.roundsPerDeal} · u špilu ${v.deckCount}`;
 
   const taking = new Set(preview?.capture ?? []);
   const table = v.table.map(c => cardEl(c, {
@@ -58,35 +79,7 @@ function render() {
     onClick: myTurn ? () => selectHand(c.id) : undefined,
   })));
 
-  updateControls(v, myTurn);
-}
-
-function updateControls(v, myTurn) {
-  const hint = $('hint');
-  const captureBtn = $('captureBtn');
-  captureBtn.disabled = $('throwBtn').disabled = $('suggestBtn').disabled = !myTurn;
-  captureBtn.textContent = 'Nosi';
-  if (!myTurn) {
-    hint.textContent = v.phase === 'PLAYING' ? `Na potezu: ${playerName(v.turn, v.players.length)}…` : '';
-    return;
-  }
-
-  const card = v.hand.find(c => c.id === selectedHand);
-  const picked = v.table.filter(c => selectedTable.has(c.id));
-  const valid = card && picked.length > 0 && isValidCapture(card, picked);
-  captureBtn.disabled = !valid;
-  if (picked.length > 0) captureBtn.textContent = `Nosi (${picked.length})`;
-  $('throwBtn').disabled = !card;
-
-  if (!card) {
-    hint.textContent = 'Vi ste na potezu. Izaberite kartu iz ruke.';
-  } else if (picked.length === 0) {
-    hint.textContent = captureOptions(card, v.table).length > 0
-      ? `Izaberite karte sa stola koje nosite sa ${cardName(card)} (ili „Predlog“).`
-      : `${cardName(card)} ne može ništa da odnese — bacite je na sto.`;
-  } else {
-    hint.textContent = valid ? 'Može! Pritisnite „Nosi“.' : 'Ova kombinacija ne daje tačan zbir.';
-  }
+  updateControls(v, myTurn, selectedHand, selectedTable);
 }
 
 // ---------- interakcija ----------
@@ -136,6 +129,11 @@ function afterMove() {
   scheduleAi();
 }
 
+/** Koliko je karata odigrano u partiji (za seed računara u izazovu). */
+function playedCount(s) {
+  return 52 - 4 - s.deck.length - s.players.reduce((n, p) => n + p.hand.length, 0);
+}
+
 /** Računar bira potez, pokaže ga (karta i ono što nosi), pa ga odigra. */
 function scheduleAi() {
   clearTimeout(aiTimer);
@@ -143,7 +141,8 @@ function scheduleAi() {
   if (s.phase !== 'PLAYING' || s.turn === ME) return;
   const player = s.turn;
   aiTimer = setTimeout(() => {
-    const move = chooseMove(game.getPlayerView(player), 'hard');
+    const rng = dailyKey ? makeRng(daily.aiSeed(dailyKey, playedCount(game.peek()))) : Math.random;
+    const move = chooseMove(game.getPlayerView(player), 'hard', rng);
     const card = game.peek().players[player].hand.find(c => c.id === move.cardId);
     preview = { player, card, capture: move.capture };
     render();
@@ -159,14 +158,42 @@ function announce(rec) {
   if (rec.captured.length === 0) return;
   const who = rec.player === ME ? 'Vi' : playerName(rec.player, game.playerCount);
   const what = rec.captured.map(cardName).join(' ');
-  if (rec.tabla) toast(`${who}: ${cardName(rec.card)} nosi ${what} — TABLA!`, true);
-  else toast(`${who}: ${cardName(rec.card)} nosi ${what}`);
+  toast(`${who}: ${cardName(rec.card)} nosi ${what}${rec.tabla ? ' — TABLA!' : ''}`, rec.tabla);
+  if (rec.tabla) celebrateTabla(who);
 }
 
-// ---------- kraj partije / meča ----------
+// ---------- kraj partije / meča / izazova ----------
 
 function showDealEnd() {
-  if (fillDealEnd(game.getState(), mySide())) $('dealEnd').showModal();
+  const state = game.getState();
+  if (!fillDealEnd(state, game.sideOf(ME))) return;
+  $('shareBtn').hidden = !dailyKey;
+  if (dailyKey) {
+    const [me, opp] = state.history.at(-1).scores;
+    const result = { me: me.total, opp: opp.total, tablas: me.tablas };
+    const results = daily.saveResult(dailyKey, result, report);
+    const days = daily.streak(results, dailyKey);
+    $('dealEndTitle').textContent = `Dnevni izazov ${daily.dayLabel(dailyKey)}: ${daily.verdict(result)}`;
+    $('dealEndNote').textContent += days > 1 ? ` Niz: ${days} dana zaredom.` : ' Novi izazov sutra.';
+    $('shareBtn').onclick = () => shareResult(daily.shareText(dailyKey, result, days));
+    $('nextDealBtn').textContent = 'Nazad na običnu igru';
+  }
+  $('dealEnd').showModal();
+}
+
+function showDailyDone(key, results) {
+  const r = results[key];
+  const days = daily.streak(results, key);
+  $('dailyDoneText').textContent = `Vi ${r.me} : ${r.opp} računar (${daily.verdict(r)}), table: ${r.tablas}.`
+    + `${days > 1 ? ` Niz: ${days} dana zaredom.` : ''} Novi izazov stiže u ponoć.`;
+  $('dailyShareBtn').onclick = () => shareResult(daily.shareText(key, r, days));
+  $('dailyDone').showModal();
+}
+
+function shareResult(text) {
+  daily.share(text)
+    .then(how => { if (how === 'copied') toast('Rezultat je kopiran — nalepite ga prijatelju.'); })
+    .catch(e => toast(`Deljenje nije uspelo (${e.message}).`));
 }
 
 // Escape ne sme da zatvori prozor bez prelaska na sledeću partiju (igra bi stala).
@@ -174,12 +201,10 @@ $('dealEnd').addEventListener('cancel', e => e.preventDefault());
 
 $('nextDealBtn').addEventListener('click', () => {
   $('dealEnd').close();
-  if (game.peek().phase === 'MATCH_END') { newGame(game.playerCount); return; }
+  if (dailyKey) { resumeNormal(); return; }
+  if (game.peek().phase === 'MATCH_END') { startNormal(game.playerCount); return; }
   game.nextDeal();
-  clearSelection();
-  save();
-  render();
-  scheduleAi();
+  start(game, slot, null);
 });
 
 // ---------- dugmad / meni ----------
@@ -189,29 +214,26 @@ $('throwBtn').addEventListener('click', () => doPlay([]));
 $('suggestBtn').addEventListener('click', suggest);
 $('menuBtn').addEventListener('click', () => {
   document.querySelector(`input[name="players"][value="${game.playerCount}"]`).checked = true;
+  $('soundToggle').checked = soundOn();
   $('menu').showModal();
 });
 $('closeMenuBtn').addEventListener('click', () => $('menu').close());
 $('newGameBtn').addEventListener('click', () => {
-  const players = Number(document.querySelector('input[name="players"]:checked').value);
   $('menu').close();
-  newGame(players);
+  startNormal(Number(document.querySelector('input[name="players"]:checked').value));
 });
+$('dailyBtn').addEventListener('click', () => { $('menu').close(); startDaily(); });
+$('soundToggle').addEventListener('change', e => setSound(e.target.checked, report));
+$('closeDailyBtn').addEventListener('click', () => $('dailyDone').close());
 
 // ---------- start ----------
 
-game = loadGame(msg => toast(msg));
-if (game) {
-  render();
-  if (game.peek().phase === 'PLAYING') scheduleAi();
-  else showDealEnd();
-} else {
-  newGame(2);
-}
+resumeNormal();
+if (new URLSearchParams(location.search).has('izazov')) startDaily();
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(e => console.error('Rad bez interneta nije uključen:', e));
 }
 
 // za headless testove
-window.__tablic = { get game() { return game; }, ME };
+window.__tablic = { get game() { return game; }, get dailyKey() { return dailyKey; }, ME };

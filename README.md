@@ -17,7 +17,8 @@ od engine-a i tanak Vanilla JS UI. Uživo: https://tablic.igrajmo.online/
 - ✅ Pravila (`pravila.html`, sa čestim pitanjima), SEO (canonical, Open Graph, JSON-LD,
   robots.txt, sitemap.xml), PWA (manifest, ikonice, rad bez interneta preko `sw.js`)
 - ⏳ Online igra sa ljudima: prebaciti server iz preferansa/lore (auth, sobe, socket.io)
-- ⏳ Zvuk
+- ✅ Dnevni izazov (ui/daily.js: isto mešanje za sve tog dana, AI seed po danu i broju odigranih karata, jedan pokušaj dnevno, niz dana, „Podeli rezultat“; link `?izazov`)
+- ✅ Proslava table (ui/celebrate.js: sto se strese, natpis TABLA!, zvuk udarca iz Web Audio; zvuk se isključuje u meniju)
 
 ## Pokretanje
 ```bash

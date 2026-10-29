@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "cd engine && npm run build",
-    "test": "cd engine && npm test",
+    "test": "cd engine && npm test && cd .. && node --test \"test/*.test.mjs\"",
     "serve": "node tools/serve.js",
     "test:ui": "node tools/browser-smoke-test.mjs",
     "deploy": "sh tools/deploy.sh"

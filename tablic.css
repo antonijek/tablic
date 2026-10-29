@@ -140,6 +140,35 @@ dialog .btn.primary { color: var(--accent-ink); }
 .players-pick { border: 1px solid rgba(127, 127, 127, .35); border-radius: 10px; padding: 8px 12px 12px; margin: 0; }
 .players-pick legend { font-weight: 700; padding: 0 4px; }
 .players-pick label { flex-direction: row; align-items: center; gap: 8px; font-weight: 500; padding: 6px 0; cursor: pointer; }
+.menu-daily { display: flex; flex-direction: column; gap: 4px; margin-top: 14px; }
+.menu-daily .btn { align-self: flex-start; }
+dialog label.toggle { flex-direction: row; align-items: center; gap: 8px; margin-top: 14px; cursor: pointer; }
+
+/* Proslava table: sto se strese, a preko njega iskoči natpis. */
+.table-area.slam { animation: slam .45s ease; }
+@keyframes slam {
+  0% { transform: scale(1); }
+  25% { transform: scale(1.025) rotate(-.4deg); }
+  50% { transform: scale(.99) rotate(.3deg); }
+  100% { transform: scale(1); }
+}
+.tabla-burst {
+  position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: clamp(2.4rem, 11vw, 4.5rem); font-weight: 900; letter-spacing: .06em; color: var(--accent);
+  text-shadow: 0 3px 0 var(--accent-ink), 0 6px 18px rgba(0, 0, 0, .6); pointer-events: none;
+  animation: burst 1.5s ease forwards;
+}
+.tabla-burst small { font-size: .32em; letter-spacing: 0; color: var(--ink); text-shadow: 0 2px 6px rgba(0, 0, 0, .7); }
+@keyframes burst {
+  0% { transform: scale(.3); opacity: 0; }
+  20% { transform: scale(1.15); opacity: 1; }
+  35% { transform: scale(1); }
+  80% { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.05); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .table-area.slam, .tabla-burst, .card.incoming { animation: none; }
+}
 .result { width: 100%; border-collapse: collapse; }
 .result th, .result td { padding: 6px 8px; text-align: right; border-bottom: 1px solid rgba(127, 127, 127, .25); }
 .result th:first-child, .result td:first-child { text-align: left; }

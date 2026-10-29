@@ -74,8 +74,24 @@
     </fieldset>
     <div class="dialog-buttons">
       <button id="newGameBtn" class="btn primary">Počni novu igru</button>
+    </div>
+    <div class="menu-daily">
+      <button id="dailyBtn" class="btn">🗓️ Dnevni izazov</button>
+      <span class="note">Isto deljenje za sve igrače danas — jedna partija, rezultat možete podeliti.</span>
+    </div>
+    <label class="toggle"><input type="checkbox" id="soundToggle"> Zvuk</label>
+    <div class="dialog-buttons">
       <a class="btn ghost" href="./pravila.html">Pravila</a>
       <button id="closeMenuBtn" class="btn ghost">Zatvori</button>
+    </div>
+  </dialog>
+
+  <dialog id="dailyDone">
+    <h2>Današnji izazov je odigran</h2>
+    <p id="dailyDoneText"></p>
+    <div class="dialog-buttons">
+      <button id="dailyShareBtn" class="btn primary">Podeli rezultat</button>
+      <button id="closeDailyBtn" class="btn ghost">Zatvori</button>
     </div>
   </dialog>
 
@@ -88,6 +104,7 @@
     <p id="dealEndNote" class="note"></p>
     <div class="dialog-buttons">
       <button id="nextDealBtn" class="btn primary">Sledeća partija</button>
+      <button id="shareBtn" class="btn" hidden>Podeli rezultat</button>
     </div>
   </dialog>
 
