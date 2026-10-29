@@ -38,10 +38,81 @@
     <h1>Tablić</h1>
     <div id="scoreBar" class="score" aria-live="polite"></div>
     <div class="top-buttons">
+      <button id="onlineBtn" class="icon-btn" aria-label="Igraj online sa ljudima" title="Igraj online sa ljudima">🌐</button>
+      <button id="chatBtn" class="icon-btn" aria-label="Poruke" hidden>💬<span id="chatBadge" class="badge" hidden></span></button>
       <button id="soundBtn" class="icon-btn" aria-label="Zvuk">🔊</button>
       <button id="menuBtn" class="icon-btn" aria-label="Meni">☰</button>
     </div>
   </header>
+
+  <!-- Online: prijava (isti nalog kao Preferans i Lora), lobi i čekaonica (online.js, ui/online-lobby.js) -->
+  <section id="lobby" class="lobby" hidden>
+    <div class="lobby-box">
+      <header class="lobby-head">
+        <h2>Tablić online</h2>
+        <button id="lobbyCloseBtn" class="icon-btn" aria-label="Zatvori">✕</button>
+      </header>
+      <p id="lobbyMsg" class="lobby-msg" role="status" hidden></p>
+
+      <form id="loginPanel" class="panel" hidden>
+        <p class="note">Isti nalog kao za Preferans i Loru na igrajmo.online.</p>
+        <label>Email <input id="loginEmail" type="email" autocomplete="email" required></label>
+        <label id="loginNameRow" hidden>Ime za stolom <input id="loginName" maxlength="40" autocomplete="nickname"></label>
+        <label>Lozinka <input id="loginPassword" type="password" autocomplete="current-password" required></label>
+        <p id="loginError" class="error" role="alert"></p>
+        <button id="loginSubmit" class="btn primary" type="submit">Prijavi se</button>
+        <button id="loginToggle" class="btn ghost" type="button">Nemate nalog? Registrujte se</button>
+      </form>
+
+      <div id="lobbyPanel" class="panel" hidden>
+        <p>Zdravo, <b id="meName"></b> · rejting <b id="meRating">1000</b></p>
+        <button id="quickBtn" class="btn primary">⚡ Brza igra</button>
+        <div class="row">
+          <select id="newRoomPlayers" aria-label="Broj igrača">
+            <option value="2">1 na 1</option><option value="3">U troje</option><option value="4">2 na 2</option>
+          </select>
+          <button id="createBtn" class="btn">Nova soba</button>
+        </div>
+        <div class="row">
+          <input id="joinCode" maxlength="5" placeholder="Kod sobe" autocapitalize="characters" aria-label="Kod sobe">
+          <button id="joinBtn" class="btn">Uđi</button>
+        </div>
+        <h3>Otvorene sobe</h3>
+        <ul id="roomList" class="list"></ul>
+        <h3>Najbolji igrači</h3>
+        <ol id="topList" class="list"></ol>
+        <button id="logoutBtn" class="btn ghost">Odjavi se</button>
+      </div>
+
+      <div id="waitPanel" class="panel" hidden>
+        <p>Soba <b id="waitCode"></b> <button id="copyLinkBtn" class="btn">📋 Pošalji poziv</button></p>
+        <div class="row" id="waitPlayersRow">
+          <span>Igrača:</span>
+          <select id="waitPlayers" aria-label="Broj igrača">
+            <option value="2">1 na 1</option><option value="3">U troje</option><option value="4">2 na 2</option>
+          </select>
+        </div>
+        <ul id="seatList" class="list"></ul>
+        <p class="note" id="waitNote"></p>
+        <h3>Online sada</h3>
+        <ul id="onlineList" class="list"></ul>
+        <div class="row">
+          <button id="startBtn" class="btn primary">Počni</button>
+          <button id="leaveBtn" class="btn ghost">Izađi iz sobe</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <dialog id="chatDialog">
+    <h2>Poruke</h2>
+    <ul id="chatList" class="chat-list"></ul>
+    <form id="chatForm" class="row">
+      <input id="chatInput" maxlength="200" autocomplete="off" aria-label="Poruka">
+      <button class="btn primary" type="submit">Pošalji</button>
+    </form>
+    <div class="dialog-buttons"><button id="closeChatBtn" class="btn ghost" type="button">Zatvori</button></div>
+  </dialog>
 
   <main class="room">
     <div class="table" aria-hidden="true"></div>
@@ -80,6 +151,7 @@
       <span class="note">Isto deljenje za sve igrače danas — jedna partija, rezultat možete podeliti.</span>
     </div>
     <div class="dialog-buttons">
+      <button id="leaveOnlineBtn" class="btn" hidden>Napusti online igru</button>
       <a class="btn ghost" href="./pravila.html">Pravila</a>
       <button id="closeMenuBtn" class="btn ghost">Zatvori</button>
     </div>

@@ -16,7 +16,12 @@ od engine-a i tanak Vanilla JS UI. Uživo: https://tablic.igrajmo.online/
   pravilima), dugme „Predlog“, čuvanje partije u localStorage
 - ✅ Pravila (`pravila.html`, sa čestim pitanjima), SEO (canonical, Open Graph, JSON-LD,
   robots.txt, sitemap.xml), PWA (manifest, ikonice, rad bez interneta preko `sw.js`)
-- ⏳ Online igra sa ljudima: prebaciti server iz preferansa/lore (auth, sobe, socket.io)
+- ✅ Online sa ljudima (`server/`, po uzoru na Lorin server): prijava istim nalogom kao Preferans i Lora
+  (server prosleđuje /api/login|register|me Preferansu, isti JWT_SECRET), lobi (brza igra, nova soba 1 na 1 /
+  troje / 2 na 2, ulaz kodom, link za poziv `?soba=KOD`, poziv igraču koji je online), računar popunjava prazna
+  mesta i igra za igrača bez veze posle 20 s, rejting (ELO po stranama, samo sa ≥ 2 čoveka), chat, sobe prežive
+  restart (active_rooms). Deo vezan za pravila je u `server/src/game.ts` (za Remi se menja samo on).
+  Testovi: `cd server && npm test`, `npm run test:online` (dva igrača kroz pregledač). pm2 `tablic-server`, port 3004
 - ✅ Dnevni izazov (ui/daily.js: isto mešanje za sve tog dana, AI seed po danu i broju odigranih karata, jedan pokušaj dnevno, niz dana, „Podeli rezultat“; link `?izazov`)
 - ✅ Proslava table (ui/celebrate.js: sto se strese, natpis TABLA!, zvuk udarca iz Web Audio; zvuk se isključuje u meniju)
 

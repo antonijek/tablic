@@ -9,13 +9,18 @@ const SEATS = { 2: ['me', 'top'], 3: ['me', 'right', 'left'], 4: ['me', 'right',
 // Računari imaju imena kao u Lori; u četvoro je Marko (preko puta) partner.
 const NAMES = { 2: ['Vi', 'Marko'], 3: ['Vi', 'Ana', 'Luka'], 4: ['Vi', 'Ana', 'Marko', 'Luka'] };
 const PAIR_NAMES = ['Mi', 'Oni'];
+let roomNames = null; // online: imena iz sobe, po mestima na ekranu
+
+export function setNames(names) {
+  roomNames = names;
+}
 
 export function playerName(pos, playerCount) {
-  return NAMES[playerCount][pos];
+  return roomNames?.[pos] ?? NAMES[playerCount][pos];
 }
 
 export function sideName(side, playerCount) {
-  return playerCount === 4 ? PAIR_NAMES[side] : NAMES[playerCount][side];
+  return playerCount === 4 ? PAIR_NAMES[side] : playerName(side, playerCount);
 }
 
 function tablasText(n) {

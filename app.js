@@ -10,6 +10,8 @@ import { loadGame, saveGame, NORMAL_SLOT } from './ui/storage.js';
 import { celebrateTabla, setSound, soundOn } from './ui/celebrate.js';
 import { toast } from './ui/toast.js';
 import * as daily from './ui/daily.js';
+import { initOnline } from './online.js';
+import { fillOnlineEnd } from './ui/online-end.js';
 
 const AI_DELAY = 600;     // pauza pre nego što računar odigra
 const PREVIEW_MS = 900;   // koliko se vidi potez računara pre nego što karte odu sa stola
@@ -22,7 +24,8 @@ let dailyKey = null;              // datum izazova, ili null u običnoj igri
 let selectedHand = null;          // id karte iz ruke
 const selectedTable = new Set();  // id-jevi karata sa stola
 let aiTimer = null;
-let preview = null;               // potez računara koji se upravo prikazuje: { player, card, capture }
+let preview = null;               // potez koji se upravo prikazuje: { player, card, capture }
+let online = null;                // online igra (online.js); dok je online.active, sto crta stanje sa servera
 
 const report = msg => toast(msg);
 const save = () => saveGame(game, report, slot);
@@ -40,10 +43,15 @@ function start(newGame, newSlot, key) {
   else showDealEnd();
 }
 
-const startNormal = players => start(new TablicGame({ players }), NORMAL_SLOT, null);
+const onlineBusy = () => {
+  if (online?.active) toast('Prvo napustite online igru (☰ → Napusti online igru).');
+  return online?.active;
+};
+const startNormal = players => { if (!onlineBusy()) start(new TablicGame({ players }), NORMAL_SLOT, null); };
 const resumeNormal = () => start(loadGame(report) ?? new TablicGame(), NORMAL_SLOT, null);
 
 function startDaily() {
+  if (onlineBusy()) return;
   const key = daily.todayKey();
   const results = daily.loadResults(report);
   if (results[key]) { showDailyDone(key, results); return; }
@@ -55,12 +63,13 @@ function startDaily() {
 // ---------- render ----------
 
 function render() {
-  const v = game.getPlayerView(ME);
-  const myTurn = v.phase === 'PLAYING' && v.turn === ME && !preview;
+  const v = online?.active ? online.view() : game.getPlayerView(ME);
+  const myTurn = v.phase === 'PLAYING' && v.turn === ME && !preview && !online?.waiting;
 
   renderScoreBar($('scoreBar'), v);
   renderOpponents($('opponents'), v, preview);
-  const where = dailyKey ? `Dnevni izazov ${daily.dayLabel(dailyKey)}` : `Partija ${v.dealNo}`;
+  const where = online?.active ? `Soba ${online.room().code} · partija ${v.dealNo}`
+    : dailyKey ? `Dnevni izazov ${daily.dayLabel(dailyKey)}` : `Partija ${v.dealNo}`;
   $('roundInfo').textContent = `${where} · deljenje ${v.round}/${v.roundsPerDeal} · u špilu ${v.deckCount}`;
 
   const taking = new Set(preview?.capture ?? []);
@@ -80,6 +89,7 @@ function render() {
   })));
 
   updateControls(v, myTurn, selectedHand, selectedTable);
+  $('suggestBtn').hidden = Boolean(online?.active); // u igri sa ljudima nema pomoći računara
 }
 
 // ---------- interakcija ----------
@@ -112,6 +122,12 @@ function suggest() {
 
 function doPlay(capture) {
   if (!selectedHand) return;
+  if (online?.active) {
+    online.play(selectedHand, capture); // server proverava potez i šalje novo stanje
+    clearSelection();
+    render();
+    return;
+  }
   try {
     announce(game.play(ME, selectedHand, capture));
   } catch (e) {
@@ -138,7 +154,7 @@ function playedCount(s) {
 function scheduleAi() {
   clearTimeout(aiTimer);
   const s = game.peek();
-  if (s.phase !== 'PLAYING' || s.turn === ME) return;
+  if (online?.active || s.phase !== 'PLAYING' || s.turn === ME) return;
   const player = s.turn;
   aiTimer = setTimeout(() => {
     const rng = dailyKey ? makeRng(daily.aiSeed(dailyKey, playedCount(game.peek()))) : Math.random;
@@ -156,7 +172,8 @@ function scheduleAi() {
 
 function announce(rec) {
   if (rec.captured.length === 0) return;
-  const who = rec.player === ME ? 'Vi' : playerName(rec.player, game.playerCount);
+  const count = online?.active ? online.view().players.length : game.playerCount;
+  const who = rec.player === ME ? 'Vi' : playerName(rec.player, count);
   const what = rec.captured.map(cardName).join(' ');
   toast(`${who}: ${cardName(rec.card)} nosi ${what}${rec.tabla ? ' — TABLA!' : ''}`, rec.tabla);
   if (rec.tabla) celebrateTabla(who);
@@ -200,6 +217,13 @@ function shareResult(text) {
 $('dealEnd').addEventListener('cancel', e => e.preventDefault());
 
 $('nextDealBtn').addEventListener('click', () => {
+  if (online?.active) {
+    if (online.room().status === 'FINISHED') { $('dealEnd').close(); online.leaveFinished(); return; }
+    online.ready(); // sledeća partija kreće kad svi kliknu „Dalje“ (ili posle roka na serveru)
+    $('nextDealBtn').disabled = true;
+    $('nextDealBtn').textContent = 'Čeka se ostale…';
+    return;
+  }
   $('dealEnd').close();
   if (dailyKey) { resumeNormal(); return; }
   if (game.peek().phase === 'MATCH_END') { startNormal(game.playerCount); return; }
@@ -214,6 +238,7 @@ $('throwBtn').addEventListener('click', () => doPlay([]));
 $('suggestBtn').addEventListener('click', suggest);
 $('menuBtn').addEventListener('click', () => {
   document.querySelector(`input[name="players"][value="${game.playerCount}"]`).checked = true;
+  $('leaveOnlineBtn').hidden = !online?.active;
   $('menu').showModal();
 });
 $('closeMenuBtn').addEventListener('click', () => $('menu').close());
@@ -226,6 +251,21 @@ function showSound() { $('soundBtn').textContent = soundOn() ? '🔊' : '🔇'; 
 $('soundBtn').addEventListener('click', () => { setSound(!soundOn(), report); showSound(); });
 showSound();
 $('closeDailyBtn').addEventListener('click', () => $('dailyDone').close());
+$('leaveOnlineBtn').addEventListener('click', () => { $('menu').close(); online.leave(); });
+$('onlineBtn').addEventListener('click', () => online.open());
+
+// ---------- online ----------
+
+online = initOnline({
+  render,
+  toast,
+  announce,
+  setPreview: p => { preview = p; render(); },
+  enter: () => { clearTimeout(aiTimer); preview = null; clearSelection(); },
+  exit: () => { if ($('dealEnd').open) $('dealEnd').close(); resumeNormal(); },
+  dealEnd: (view, room) => { fillOnlineEnd(view, room); $('dealEnd').showModal(); },
+  closeDealEnd: () => { if ($('dealEnd').open) $('dealEnd').close(); },
+});
 
 // ---------- start ----------
 
@@ -237,4 +277,4 @@ if ('serviceWorker' in navigator) {
 }
 
 // za headless testove
-window.__tablic = { get game() { return game; }, get dailyKey() { return dailyKey; }, ME };
+window.__tablic = { get game() { return game; }, get dailyKey() { return dailyKey; }, get online() { return online; }, ME };

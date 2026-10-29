@@ -2,14 +2,14 @@
 // (da se nova verzija vidi odmah), a keš se koristi samo kad mreže nema. Karte se ne
 // menjaju, pa se one uzimaju iz keša. Posle promene karata ili spiska fajlova podići CACHE.
 
-const CACHE = 'tablic-v2';
+const CACHE = 'tablic-v3';
 const SUITS = ['S', 'H', 'D', 'C'];
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const ENGINE = ['index', 'types', 'cards', 'capture', 'scoring', 'sides', 'game', 'ai', 'search'];
-const UI = ['cards', 'seats', 'deal-end', 'controls', 'storage', 'toast', 'daily', 'celebrate'];
+const UI = ['cards', 'seats', 'deal-end', 'controls', 'storage', 'toast', 'daily', 'celebrate', 'rotate', 'online-lobby', 'online-end'];
 
 const CORE = [
-  './', './tablic.html', './pravila.html', './tablic.css', './app.js', './manifest.json', './icons/icon.svg',
+  './', './tablic.html', './pravila.html', './tablic.css', './app.js', './online.js', './manifest.json', './icons/icon.svg',
   ...ENGINE.map(f => `./engine/dist/${f}.js`),
   ...UI.map(f => `./ui/${f}.js`),
   ...SUITS.flatMap(s => RANKS.map(r => `./icons/cards/${r}${s}.webp`)),
@@ -50,6 +50,9 @@ async function cacheFirst(req) {
 
 self.addEventListener('fetch', e => {
   const req = e.request;
-  if (req.method !== 'GET' || new URL(req.url).origin !== self.location.origin) return;
+  const url = new URL(req.url);
+  // veza sa serverom (online igra, prijava) nikad iz keša
+  if (req.method !== 'GET' || url.origin !== self.location.origin) return;
+  if (url.pathname.startsWith('/socket.io/') || url.pathname.startsWith('/api/')) return;
   e.respondWith(req.url.includes('/icons/cards/') ? cacheFirst(req) : networkFirst(req));
 });
