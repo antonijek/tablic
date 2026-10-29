@@ -52,6 +52,8 @@ NGINX
     nginx -t
     systemctl reload nginx
     certbot --nginx -d $DOMAIN --non-interactive --agree-tos --redirect
+    # HTTP/2 kao na ostalim sajtovima (certbot upisuje samo 'listen 443 ssl')
+    sed -i 's/listen 443 ssl; # managed by Certbot/listen 443 ssl http2; # managed by Certbot/' /etc/nginx/sites-available/$DOMAIN
     nginx -t && systemctl reload nginx
   "
 fi
