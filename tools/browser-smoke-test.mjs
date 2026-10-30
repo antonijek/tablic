@@ -24,7 +24,8 @@ async function openPage(tag, viewport, ctx = browser) {
   const page = await ctx.newPage({ viewport });
   page.on('pageerror', e => errors.push(`${tag} ${e}`));
   page.on('console', m => { if (m.type() === 'error') errors.push(`${tag} ${m.text()}`); });
-  page.on('requestfailed', r => errors.push(`${tag} nije učitano: ${r.url()}`));
+  // prekinut zahtev (stranica se ponovo učitava ili zatvara) nije greška
+  page.on('requestfailed', r => { if (!r.failure()?.errorText.includes('ERR_ABORTED')) errors.push(`${tag} nije učitano: ${r.url()}`); });
   // broji proslave table (natpis TABLA! se doda pa ukloni)
   await page.addInitScript(() => {
     window.__bursts = 0;

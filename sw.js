@@ -2,11 +2,11 @@
 // (da se nova verzija vidi odmah), a keš se koristi samo kad mreže nema. Karte se ne
 // menjaju, pa se one uzimaju iz keša. Posle promene karata ili spiska fajlova podići CACHE.
 
-const CACHE = 'tablic-v3';
+const CACHE = 'tablic-v4';
 const SUITS = ['S', 'H', 'D', 'C'];
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
 const ENGINE = ['index', 'types', 'cards', 'capture', 'scoring', 'sides', 'game', 'ai', 'search'];
-const UI = ['cards', 'seats', 'deal-end', 'controls', 'storage', 'toast', 'daily', 'celebrate', 'rotate', 'online-lobby', 'online-end'];
+const UI = ['cards', 'seats', 'deal-end', 'controls', 'storage', 'toast', 'daily', 'celebrate', 'rotate', 'online-lobby', 'online-end', 'daily-ui', 'visit'];
 
 const CORE = [
   './', './tablic.html', './pravila.html', './tablic.css', './app.js', './online.js', './manifest.json', './icons/icon.svg',

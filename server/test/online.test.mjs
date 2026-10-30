@@ -16,7 +16,7 @@ const SECRET = 'test-secret';
 const AUTH_PORT = 3911;
 const PORT = 3912;
 const URL = `http://127.0.0.1:${PORT}`;
-const NAMES = { 1: 'Pera', 2: 'Mika', 3: 'Laza' };
+const NAMES = { 1: 'Pera', 2: 'Mika', 3: 'Laza', 9: 'Admin' };
 const dbPath = path.join(os.tmpdir(), `tablic-test-${process.pid}.db`);
 let authServer;
 let server;
@@ -25,7 +25,7 @@ before(async () => {
   authServer = http.createServer((req, res) => {
     try {
       const { userId } = jwt.verify(String(req.headers.authorization).replace('Bearer ', ''), SECRET);
-      res.end(JSON.stringify({ user: { id: userId, name: NAMES[userId], is_admin: false } }));
+      res.end(JSON.stringify({ user: { id: userId, name: NAMES[userId], is_admin: userId === 9 } }));
     } catch {
       res.statusCode = 401;
       res.end('{}');
@@ -161,4 +161,23 @@ test('jedan čovek u troje: računar popunjava mesta, povratak posle pada veze',
   back.socket.emit('room:leave');
   await new Promise(r => back.socket.once('room:none', r));
   back.socket.close();
+});
+
+test('admin: samo admin nalog vidi pregled, igrače, sobe i mečeve; brojač poseta', async () => {
+  const get = (p, userId) => fetch(URL + '/api/admin' + p, { headers: userId ? { Authorization: 'Bearer ' + jwt.sign({ userId }, SECRET) } : {} });
+  assert.equal((await get('/overview')).status, 401);
+  assert.equal((await get('/overview', 1)).status, 403);
+  const ov = await (await get('/overview', 9)).json();
+  assert.ok(ov.totalPlayers >= 2);
+  assert.ok(ov.today.players >= 2, 'igrači koji su se povezali danas');
+  assert.ok(Array.isArray(ov.online) && Array.isArray(ov.days));
+  assert.ok((await (await get('/players', 9)).json()).players.length >= 2);
+  assert.ok(Array.isArray((await (await get('/rooms', 9)).json()).rooms));
+  assert.ok(Array.isArray((await (await get('/matches', 9)).json()).matches));
+  const visit = v => fetch(URL + '/api/visit', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ v }) });
+  assert.equal((await visit('abc123def456')).status, 204);
+  assert.equal((await visit('<script>')).status, 204);
+  const ov2 = await (await get('/overview', 9)).json();
+  assert.equal(ov2.today.visitors, 1, 'neispravan id se ne broji');
+  assert.equal((await fetch(URL + '/api/admin/rooms/NEMA1/close', { method: 'POST', headers: { Authorization: 'Bearer ' + jwt.sign({ userId: 9 }, SECRET) } })).status, 404);
 });

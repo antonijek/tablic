@@ -9,7 +9,9 @@ import { updateControls } from './ui/controls.js';
 import { loadGame, saveGame, NORMAL_SLOT } from './ui/storage.js';
 import { celebrateTabla, setSound, soundOn } from './ui/celebrate.js';
 import { toast } from './ui/toast.js';
+import { countVisit } from './ui/visit.js';
 import * as daily from './ui/daily.js';
+import { fillDailyEnd, showDailyDone } from './ui/daily-ui.js';
 import { initOnline } from './online.js';
 import { fillOnlineEnd } from './ui/online-end.js';
 
@@ -54,7 +56,7 @@ function startDaily() {
   if (onlineBusy()) return;
   const key = daily.todayKey();
   const results = daily.loadResults(report);
-  if (results[key]) { showDailyDone(key, results); return; }
+  if (results[key]) { showDailyDone(key, results, toast); return; }
   const dailySlot = daily.stateSlot(key, report);
   const g = loadGame(report, dailySlot) ?? new TablicGame({ players: 2, seed: daily.seedFor(key), firstDealer: 1 });
   start(g, dailySlot, key);
@@ -185,32 +187,8 @@ function showDealEnd() {
   const state = game.getState();
   if (!fillDealEnd(state, game.sideOf(ME))) return;
   $('shareBtn').hidden = !dailyKey;
-  if (dailyKey) {
-    const [me, opp] = state.history.at(-1).scores;
-    const result = { me: me.total, opp: opp.total, tablas: me.tablas };
-    const results = daily.saveResult(dailyKey, result, report);
-    const days = daily.streak(results, dailyKey);
-    $('dealEndTitle').textContent = `Dnevni izazov ${daily.dayLabel(dailyKey)}: ${daily.verdict(result)}`;
-    $('dealEndNote').textContent += days > 1 ? ` Niz: ${days} dana zaredom.` : ' Novi izazov sutra.';
-    $('shareBtn').onclick = () => shareResult(daily.shareText(dailyKey, result, days));
-    $('nextDealBtn').textContent = 'Nazad na običnu igru';
-  }
+  if (dailyKey) fillDailyEnd(state, dailyKey, toast);
   $('dealEnd').showModal();
-}
-
-function showDailyDone(key, results) {
-  const r = results[key];
-  const days = daily.streak(results, key);
-  $('dailyDoneText').textContent = `Vi ${r.me} : ${r.opp} računar (${daily.verdict(r)}), table: ${r.tablas}.`
-    + `${days > 1 ? ` Niz: ${days} dana zaredom.` : ''} Novi izazov stiže u ponoć.`;
-  $('dailyShareBtn').onclick = () => shareResult(daily.shareText(key, r, days));
-  $('dailyDone').showModal();
-}
-
-function shareResult(text) {
-  daily.share(text)
-    .then(how => { if (how === 'copied') toast('Rezultat je kopiran — nalepite ga prijatelju.'); })
-    .catch(e => toast(`Deljenje nije uspelo (${e.message}).`));
 }
 
 // Escape ne sme da zatvori prozor bez prelaska na sledeću partiju (igra bi stala).
@@ -271,6 +249,8 @@ online = initOnline({
 
 resumeNormal();
 if (new URLSearchParams(location.search).has('izazov')) startDaily();
+
+countVisit('tablic');
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').catch(e => console.error('Rad bez interneta nije uključen:', e));
